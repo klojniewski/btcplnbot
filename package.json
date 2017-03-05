@@ -1,17 +1,25 @@
 {
-  "name": "BTCPLN Bot",
-  "version": "0.0.1",
+  "name": "btcplnbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {
-    "async": "0.9.0",
-    "console-stamp": "0.1.5",
-    "mongoose": "3.8.25",
-    "rwlock": "5.0.0",
-    "winston": "0.9.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/klojniewski/btcplnbot.git"
   },
+  "author": "Chris Lojniewski <chris@pagepro.pl> (http://pagepro.pl)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/klojniewski/btcplnbot/issues"
+  },
+  "homepage": "https://github.com/klojniewski/btcplnbot#readme",
   "devDependencies": {
-    "uuid": "^3.0.1"
+    "axios": "^0.15.3",
+    "mongoose": "^4.8.5",
+    "uuid": "^3.0.1",
+    "winston": "^2.3.1"
   }
 }
