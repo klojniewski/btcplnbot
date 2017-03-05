@@ -1,0 +1,17 @@
+{
+  "name": "BTCPLN Bot",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "async": "0.9.0",
+    "console-stamp": "0.1.5",
+    "mongoose": "3.8.25",
+    "rwlock": "5.0.0",
+    "winston": "0.9.0"
+  },
+  "devDependencies": {
+    "uuid": "^3.0.1"
+  }
+}
