@@ -7,6 +7,8 @@ const orderSchema = mongoose.Schema({
   sellPrice: Number,
   size: Number,
   sizeAfterCommision: Number,
+  commisionBuy: String,
+  commisionSell: String,
   estimatedProfit: Number,
   dateCreated: String,
   dateFinished: String,

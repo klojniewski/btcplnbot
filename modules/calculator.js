@@ -1,17 +1,17 @@
 const Env = require('../config/env.js')
 
 class Calculator {
-  constructor () {
-
+  constructor (accountInfo) {
+    this.commissionMaker = accountInfo.commissionMaker
   }
   getSellPrice (buyPrice) {
     return buyPrice + Env.SELL_PRICE_MARGIN
   }
   getBayCommision (btcSize) {
-    return btcSize * Env.COMMISION_BUY_MAKER / 100
+    return btcSize * this.commissionMaker / 100
   }
   getSellCommision (plnValue) {
-    return plnValue * Env.COMMISION_SELL_MAKER / 100
+    return plnValue * this.commissionMaker / 100
   }
   getProfit (buySize, buyPrice, sellSize, sellPrice) {
     const buy = buySize * buyPrice;

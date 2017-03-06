@@ -11,26 +11,30 @@ const Logger = new Log()
 
 class App {
   constructor () {
+    this.profit = 0
     this.Bitmarket = new Bitmarket()
-    this.Calculator = new Calculator()
-
-    this.available = Env.AMOUNT_PLN
     Mongoose.connect(Env.MONGO_CONNECTION_STRING)
-
     Logger.info('Bot instance created')
   }
   init () {
-    Logger.info('Bot Init')
-    this.profit = 0
+    Logger.info('Bot Init, getting account info')
+    this.Bitmarket.getInfo().then((data) => {
+      this.accountInfo = data.account
+      this.available = data.balances.available.PLN
+      this.Calculator = new Calculator(this.accountInfo)
+      this.start()
+    })
+  }
+  start () {
     this.buyBtc()
     this.sellBtc()
 
     setTimeout(() => {
-      this.init()
+      this.start()
     }, 3000)
   }
   buyBtc () {
-    if (this.available > 0) {
+    if (this.available > 1) {
         // check current price
         this.Bitmarket.getBuyPrice().then((buyPrice) => {
         // create orders
@@ -79,14 +83,18 @@ class App {
     for (let i = 0; i < Env.ORDER_COUNT; i++) {
       const orderPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
       const size = Number(amountPerOrder / orderPrice).toFixed(10)
-      const sizeAfterCommision = size - Number(this.Calculator.getBayCommision(size)).toFixed(10)
+      const commisionBuy = Number(this.Calculator.getBayCommision(size)).toFixed(10)
+      const sizeAfterCommision = size - commisionBuy
       const sellPrice = this.Calculator.getSellPrice(orderPrice)
+      const commisionSell = this.Calculator.getSellCommision(sellPrice * sizeAfterCommision)
       const estimatedProfit = this.Calculator.getProfit(size, orderPrice, sizeAfterCommision, sellPrice)
       const order = {
         buyPrice: orderPrice,
         sellPrice,
         size,
         sizeAfterCommision,
+        commisionBuy,
+        commisionSell,
         estimatedProfit,
         dateCreated: new Date(),
         dateFinished: null,
@@ -105,7 +113,8 @@ class App {
           })
         })
       } else {
-        Logger.error(`Estimated profit is too low: ${estimatedProfit}`)
+        Logger.error(`Estimated profit is too low: ${estimatedProfit}, skipping`)
+        break;
       }
     }
   }
