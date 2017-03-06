@@ -17,20 +17,24 @@ class App {
     Winston.log('info', 'Bot instance created')
   }
   init () {
-    Winston.log('info', 'Starting')
+    Winston.log('info', 'Bot Init')
     this.buyBtc()
-    this.sellBtc()
+    // this.sellBtc()
 
-    setTimeout(() => {
-      this.init()
-    }, 3000)
+    // setTimeout(() => {
+    //   this.init()
+    // }, 3000)
   }
   buyBtc () {
-    // check current price
-    this.Bitmarket.getBuyPrice().then((buyPrice) => {
-      // create orders
-      this.createBuyOrders(buyPrice)
-    })
+    if (this.available > 0) {
+        // check current price
+        this.Bitmarket.getBuyPrice().then((buyPrice) => {
+        // create orders
+        this.createBuyOrders(buyPrice)
+      })
+    } else {
+      Winston.log('info', `Not enough money to buy BTC, current cash (${this.available})`)
+    }
   }
   sellBtc () {
     Winston.log('info', `Check the status of orders `)
@@ -58,12 +62,11 @@ class App {
   createBuyOrders (currentPrice) {
     Winston.log('info', `Current BTC Price is: ${currentPrice}`)
     // get aviable money
-    const available = this.available
-    Winston.log('info', `Have ${available} to spent`)
-    const amountPerOrder = available / Env.ORDER_COUNT
+    Winston.log('info', `Have ${this.available} to spent`)
+    const amountPerOrder = this.available / Env.ORDER_COUNT
     Winston.log('info', `Will create ${Env.ORDER_COUNT} orders ${amountPerOrder} PLN each`)
     let startPrice = Math.floor(currentPrice)
-    console.log('startPrice', startPrice)
+    Winston.log('info', `Orders will start from ${startPrice} PLN`)
     for (let i = 0; i < Env.ORDER_COUNT; i++) {
       const orderPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
       const size = Number(amountPerOrder / orderPrice).toFixed(10)
@@ -82,16 +85,16 @@ class App {
       }
       if (estimatedProfit > 0) {
         this.Bitmarket.createBuyOrder().then((buyPrice) => {
-          this.available = this.available - (orderPrice * size)
+          this.available = this.available - amountPerOrder
           order.id = uuid.v1()// change to bitmarket order
+          Winston.log('info', `Order created ${order.id}, cash left: ${this.available}`)
           Order(order).save(error => {
             if (error) {
               Winston.log('error', 'Failed to create order' + order.id + ' with errro ' + error)
               return
             }
-            Winston.log('info', `Order created ${order.id}, cash left: ${this.available}`)
           })
-        });
+        })
       } else {
         Winston.log('error', `Estimated profit is too low: ${estimatedProfit}`)
       }
