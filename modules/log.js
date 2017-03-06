@@ -6,10 +6,10 @@ class Log {
     Winston.add(Winston.transports.File, { filename: Env.LOGFILE })
   }
   info (message) {
-    Winston.log('info', message.yellow)
+    Winston.info('info', message.yellow)
   }
   error (message) {
-    Winston.log('error', message.red)
+    Winston.error('error', message.red)
   }
   success (message) {
     Winston.log('success', message.green)

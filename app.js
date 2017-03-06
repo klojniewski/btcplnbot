@@ -21,12 +21,13 @@ class App {
   }
   init () {
     Logger.info('Bot Init')
+    this.profit = 0
     this.buyBtc()
     this.sellBtc()
 
-    // setTimeout(() => {
-    //   this.init()
-    // }, 3000)
+    setTimeout(() => {
+      this.init()
+    }, 3000)
   }
   buyBtc () {
     if (this.available > 0) {
@@ -40,24 +41,27 @@ class App {
     }
   }
   sellBtc () {
-    Logger.info(`Check the status of orders `)
-    this.Bitmarket.getBuyPrice().then((buyPrice) => {
+    Logger.info(`Check the status of orders`)
+    this.Bitmarket.getSellPrice().then((sellPrice) => {
       // create orders
-      this.createSellOrders(buyPrice)
+      this.createSellOrders(sellPrice)
     })
   }
-  createSellOrders (buyPrice) {
-    Order.findByStatusId(Env.STATUS_NEW, (err, newOrders) => {
+  createSellOrders (sellPrice) {
+    Order.findByStatusId(Env.STATUS_NEW, (error, newOrders) => {
       Logger.info(`Found ${newOrders.length} BUY orders`)
       newOrders.forEach(order => {
         Logger.info(`Checking order status: ${order.id} `)
-        if (order.buyPrice > buyPrice) {
-          Logger.info(`BTC bought ${order.id} now create sell order!`)
-          this.Bitmarket.createSellOrder().then((buyPrice) => {
-            Logger.info(`Order #: ${order.id} has been bought`)
+        if (order.sellPrice > sellPrice) {
+          Logger.success(`BTC bought ${order.id} now create sell order!`)
+          this.Bitmarket.createSellOrder().then((sellPrice) => {
             order.status = Env.STATUS_BOUGHT
             order.save()
+            this.profit += order.estimatedProfit
           })
+        } else {
+          const diff = order.sellPrice - sellPrice
+          Logger.info(`Order #: ${order.id}, ${order.sellPrice} vs ${sellPrice} (${diff}) PLN`)
         }
       })
     });
