@@ -1,10 +1,13 @@
-const Env = require('./config/env.js')
-const Winston = require('winston')
+const Env = require('./config/env')
 const Mongoose = require('mongoose')
+const Log = require('./modules/log')
 const Bitmarket = require('./modules/bitmarket')
 const Calculator = require('./modules/calculator')
 const uuid = require('uuid');
 const Order = require('./models/order.js')
+const colors = require('colors')
+
+const Logger = new Log()
 
 class App {
   constructor () {
@@ -13,13 +16,13 @@ class App {
 
     this.available = Env.AMOUNT_PLN
     Mongoose.connect(Env.MONGO_CONNECTION_STRING)
-    Winston.add(Winston.transports.File, { filename: Env.LOGFILE })
-    Winston.log('info', 'Bot instance created')
+
+    Logger.info('Bot instance created')
   }
   init () {
-    Winston.log('info', 'Bot Init')
+    Logger.info('Bot Init')
     this.buyBtc()
-    // this.sellBtc()
+    this.sellBtc()
 
     // setTimeout(() => {
     //   this.init()
@@ -33,11 +36,11 @@ class App {
         this.createBuyOrders(buyPrice)
       })
     } else {
-      Winston.log('info', `Not enough money to buy BTC, current cash (${this.available})`)
+      Logger.info(`Not enough money to buy BTC, current cash (${this.available})`.red)
     }
   }
   sellBtc () {
-    Winston.log('info', `Check the status of orders `)
+    Logger.info(`Check the status of orders `)
     this.Bitmarket.getBuyPrice().then((buyPrice) => {
       // create orders
       this.createSellOrders(buyPrice)
@@ -45,13 +48,13 @@ class App {
   }
   createSellOrders (buyPrice) {
     Order.findByStatusId(Env.STATUS_NEW, (err, newOrders) => {
-      Winston.log('info', `Found ${newOrders.length} BUY orders`)
+      Logger.info(`Found ${newOrders.length} BUY orders`)
       newOrders.forEach(order => {
-        Winston.log('info', `Checking order status: ${order.id} `)
+        Logger.info(`Checking order status: ${order.id} `)
         if (order.buyPrice > buyPrice) {
-          Winston.log('info', `BTC bought ${order.id} now create sell order!`)
+          Logger.info(`BTC bought ${order.id} now create sell order!`)
           this.Bitmarket.createSellOrder().then((buyPrice) => {
-            Winston.log('info', `Order #: ${order.id} has been bought`)
+            Logger.info(`Order #: ${order.id} has been bought`)
             order.status = Env.STATUS_BOUGHT
             order.save()
           })
@@ -60,13 +63,15 @@ class App {
     });
   }
   createBuyOrders (currentPrice) {
-    Winston.log('info', `Current BTC Price is: ${currentPrice}`)
-    // get aviable money
-    Winston.log('info', `Have ${this.available} to spent`)
+    Logger.info(`Current BTC Price is: ${currentPrice} PLN`)
+
+    // get available money
+    Logger.info(`Have ${this.available} to spent`)
     const amountPerOrder = this.available / Env.ORDER_COUNT
-    Winston.log('info', `Will create ${Env.ORDER_COUNT} orders ${amountPerOrder} PLN each`)
+    Logger.info(`Will create ${Env.ORDER_COUNT} orders ${amountPerOrder} PLN each`)
+
     let startPrice = Math.floor(currentPrice)
-    Winston.log('info', `Orders will start from ${startPrice} PLN`)
+    Logger.info(`Orders will start from ${startPrice} PLN`)
     for (let i = 0; i < Env.ORDER_COUNT; i++) {
       const orderPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
       const size = Number(amountPerOrder / orderPrice).toFixed(10)
@@ -87,16 +92,16 @@ class App {
         this.Bitmarket.createBuyOrder().then((buyPrice) => {
           this.available = this.available - amountPerOrder
           order.id = uuid.v1()// change to bitmarket order
-          Winston.log('info', `Order created ${order.id}, cash left: ${this.available}`)
+          Logger.info(`Order created ${order.id}, cash left: ${this.available}`)
           Order(order).save(error => {
             if (error) {
-              Winston.log('error', 'Failed to create order' + order.id + ' with errro ' + error)
+              Logger.error(`Failed to create order ${order.id } with errro ${error}`)
               return
             }
           })
         })
       } else {
-        Winston.log('error', `Estimated profit is too low: ${estimatedProfit}`)
+        Logger.error(`Estimated profit is too low: ${estimatedProfit}`)
       }
     }
   }
