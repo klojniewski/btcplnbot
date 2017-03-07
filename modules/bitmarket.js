@@ -2,11 +2,10 @@ const Env = require('../config/env')
 const axios = require('axios')
 const queryString = require('query-string')
 const CryptoJS = require("crypto-js");
-const Logger = require('../modules/log')
 
 class BitMarket {
-  constructor () {
-
+  constructor (Logger) {
+    this.Logger = Logger
   }
   time () {
     return Math.floor(new Date().getTime() / 1000);
@@ -38,8 +37,8 @@ class BitMarket {
         headers: this.getApiHeaders(postQueryString)
       }).then(function (response) {
         return response.data.data
-      }).catch(function (error) {
-        Logger.error(`Error when fetching account info ${error}`)
+      }).catch(error => {
+        this.Logger.error(`Error when fetching account info ${error}`)
       });
   }
   getOrders () {
@@ -56,8 +55,8 @@ class BitMarket {
         headers: this.getApiHeaders(postQueryString)
       }).then(function (response) {
         return response.data.data
-      }).catch(function (error) {
-        Logger.error(`Error when fetching account info ${error}`)
+      }).catch(error => {
+        this.Logger.error(`Error when fetching account info ${error}`)
       });
   }
   getInfo () {
@@ -72,8 +71,8 @@ class BitMarket {
         headers: this.getApiHeaders(postQueryString)
       }).then(function (response) {
         return response.data.data
-      }).catch(function (error) {
-        Logger.error(`Error when fetching account info ${error}`)
+      }).catch(error => {
+        this.Logger.error(`Error when fetching account info ${error}`)
       });
   }
   getBuyPrice () {
@@ -81,8 +80,8 @@ class BitMarket {
       .then(function (response) {
         return Number(response.data.ask)
       })
-      .catch(function (error) {
-        Logger.error(`Error when fetching ticker ${error}`)
+      .catch(error => {
+        this.Logger.error(`Error when fetching ticker ${error}`)
       });
   }
   getSellPrice () {
@@ -90,8 +89,8 @@ class BitMarket {
       .then(function (response) {
         return Number(response.data.bid)
       })
-      .catch(function (error) {
-        Logger.error(`Error when fetching ticker ${error}`)
+      .catch(error => {
+        this.Logger.error(`Error when fetching ticker ${error}`)
       });
   }
   createSellOrder () {
@@ -99,17 +98,41 @@ class BitMarket {
       .then(function (response) {
         return Number(response.data.bid)
       })
-      .catch(function (error) {
-        Logger.error(`Error when fetching ticker ${error}`)
+      .catch(error => {
+        this.Logger.error(`Error when fetching ticker ${error}`)
       });
   }
-  createBuyOrder () {
-    return axios.get(Env.TICKER_URL)
-      .then(function (response) {
-        return Number(response.data.bid)
-      })
-      .catch(function (error) {
-        Logger.error(`Error when fetching ticker ${error}`)
+  createBuyOrder (order) {
+    const method = 'trade'
+    const market = 'BTCPLN'
+    const type = 'buy'
+    const amount = parseFloat(order.size)
+    const rate = order.buyPrice
+    const allOrNothing = 0
+    const data = {
+      method,
+      market,
+      type,
+      amount,
+      rate,
+      allOrNothing,
+      tonce: this.time()
+    }
+
+    const postQueryString = queryString.stringify(data)
+
+    return axios.post(Env.API_URL, postQueryString, {
+        headers: this.getApiHeaders(postQueryString)
+      }).then(response => {
+        if (!response.data.data) {
+          console.log(response)
+          const error = `Error when creating order ${response.error}, ${response.errorMsg}`
+          return Promise.reject(error);
+        }
+        return response.data.data
+      }).catch(error => {
+        console.log(error)
+        this.Logger.error(error)
       });
   }
 }

@@ -12,7 +12,7 @@ const Logger = new Log()
 class App {
   constructor () {
     this.profit = 0
-    this.Bitmarket = new Bitmarket()
+    this.Bitmarket = new Bitmarket(Logger)
     Mongoose.connect(Env.MONGO_CONNECTION_STRING)
     Logger.info('Bot instance created')
   }
@@ -33,11 +33,11 @@ class App {
     // });
     // return;
     this.buyBtc()
-    this.sellBtc()
+    // this.sellBtc()
 
-    setTimeout(() => {
-      this.start()
-    }, 3000)
+    // setTimeout(() => {
+    //   this.start()
+    // }, 3000)
   }
   buyBtc () {
     if (this.available > 1) {
@@ -88,7 +88,7 @@ class App {
     Logger.info(`Orders will start from ${startPrice} PLN`)
     for (let i = 0; i < Env.ORDER_COUNT; i++) {
       const orderPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
-      const size = Number(amountPerOrder / orderPrice).toFixed(10)
+      const size = Number(amountPerOrder / orderPrice).toFixed(8)
       const commisionBuy = Number(this.Calculator.getBayCommision(size)).toFixed(10)
       const sizeAfterCommision = size - commisionBuy
       const sellPrice = this.Calculator.getSellPrice(orderPrice)
@@ -107,20 +107,22 @@ class App {
         status: Env.STATUS_NEW
       }
       if (estimatedProfit > 0) {
-        this.Bitmarket.createBuyOrder().then((buyPrice) => {
-          this.available = this.available - amountPerOrder
-          order.id = uuid.v1()// change to bitmarket order
-          Logger.info(`Order created ${order.id}, cash left: ${this.available}`)
-          Order(order).save(error => {
-            if (error) {
-              Logger.error(`Failed to create order ${order.id } with errro ${error}`)
-              return
-            }
-          })
+        this.Bitmarket.createBuyOrder(order).then((resp) => {
+          if (resp.id) {
+            this.available = this.available - amountPerOrder
+            order.id = resp.id
+            Logger.info(`Order created ${order.id}, cash left: ${this.available}`)
+            Order(order).save(error => {
+              if (error) {
+                Logger.error(`Failed to create order ${order.id } with errro ${error}`)
+                return
+              }
+            })
+          }
         })
       } else {
         Logger.error(`Estimated profit is too low: ${estimatedProfit}, skipping`)
-        break;
+        break
       }
     }
   }
