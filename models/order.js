@@ -1,4 +1,4 @@
-const Env = require('../config/env.js')
+const Env = require('../config/env')
 const mongoose = require('mongoose')
 
 const orderSchema = mongoose.Schema({
