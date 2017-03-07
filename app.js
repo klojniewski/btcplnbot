@@ -4,7 +4,7 @@ const Log = require('./modules/log')
 const Bitmarket = require('./modules/bitmarket')
 const Calculator = require('./modules/calculator')
 const uuid = require('uuid');
-const Order = require('./models/order.js')
+const Order = require('./models/order')
 const colors = require('colors')
 
 const Logger = new Log()
