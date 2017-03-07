@@ -14,5 +14,11 @@ class Log {
   success (message) {
     Winston.log('success', message.green)
   }
+  extra (message) {
+    Winston.info('info', message.rainbow)
+  }
+  bold (message) {
+    Winston.info('info', message.red.bold)
+  }
 }
 module.exports = Log

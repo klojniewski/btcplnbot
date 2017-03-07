@@ -14,7 +14,7 @@ class App {
     this.profit = 0
     this.Bitmarket = new Bitmarket(Logger)
     Mongoose.connect(Env.MONGO_CONNECTION_STRING)
-    Logger.info('Bot instance created')
+    Logger.bold('Bot instance created')
   }
   init () {
     Logger.info('Bot Init, getting account info')
@@ -32,8 +32,8 @@ class App {
     //   console.log(trade)
     // });
     // return;
-    this.buyBtc()
-    // this.sellBtc()
+    // this.buyBtc()
+    this.sellBtc()
 
     // setTimeout(() => {
     //   this.start()
@@ -51,30 +51,50 @@ class App {
     }
   }
   sellBtc () {
-    Logger.info(`Check the status of orders`)
-    this.Bitmarket.getSellPrice().then((sellPrice) => {
-      // create orders
-      this.createSellOrders(sellPrice)
+    Logger.info(`Check if order has been made`)
+
+    this.Bitmarket.getTrades().then((trades) => {
+      Logger.info(`Fetched last ${trades.length} trades`)
+      const tradesIds = trades.map(order => {
+        return order.id
+      })
+      Order.findByStatusId(Env.STATUS_NEW, (error, newOrders) => {
+        Logger.info(`Found ${newOrders.length} pending BUY in DB`)
+        let pendingOrderIds = []
+        newOrders.forEach(order => {
+          const orderTraded = tradesIds.indexOf(order.id) > -1
+          if (orderTraded) {
+            Logger.success(`Order status: ${order.id}: bought `)
+            Logger.info(`Creating sell order `)
+          } else {
+            pendingOrderIds.push(parseInt(order.id, 10))
+          }
+        })
+        this.Bitmarket.getOrders().then((orders) => {
+          const buyOrdersIds = orders.map(order => {
+            return order.id
+          })
+          let confirmedOrders = []
+          let lostOrders = []
+          pendingOrderIds.forEach(orderId => {
+            const orderWaiting = buyOrdersIds.indexOf(orderId) > -1
+            if (orderWaiting) {
+              confirmedOrders.push(orderId)
+            } else {
+              lostOrders.push(orderId)
+            }
+          })
+          if (confirmedOrders.length) {
+            Logger.info(`Confirmed that ${confirmedOrders.length} are pending on the exchange`)
+          }
+          if (lostOrders.length) {
+            Logger.error(`Lost ${lostOrders.length} orders: ${lostOrders.join(',')}`)
+          }
+        })
+      });
     })
   }
   createSellOrders (sellPrice) {
-    Order.findByStatusId(Env.STATUS_NEW, (error, newOrders) => {
-      Logger.info(`Found ${newOrders.length} BUY orders`)
-      newOrders.forEach(order => {
-        Logger.info(`Checking order status: ${order.id} `)
-        if (order.sellPrice > sellPrice) {
-          Logger.success(`BTC bought ${order.id} now create sell order!`)
-          this.Bitmarket.createSellOrder().then((sellPrice) => {
-            order.status = Env.STATUS_BOUGHT
-            order.save()
-            this.profit += order.estimatedProfit
-          })
-        } else {
-          const diff = order.sellPrice - sellPrice
-          Logger.info(`Order #: ${order.id}, ${order.sellPrice} vs ${sellPrice} (${diff}) PLN`)
-        }
-      })
-    });
   }
   createBuyOrders (currentPrice) {
     Logger.info(`Current BTC Price is: ${currentPrice} PLN`)

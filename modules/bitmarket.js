@@ -36,12 +36,12 @@ class BitMarket {
     return axios.post(Env.API_URL, postQueryString, {
         headers: this.getApiHeaders(postQueryString)
       }).then(function (response) {
-        return response.data.data
+        return response.data.data.results
       }).catch(error => {
         this.Logger.error(`Error when fetching account info ${error}`)
       });
   }
-  getOrders () {
+  getOrders (type = 'buy') {
     const method = 'orders'
     const market = 'BTCPLN'
     const data = {
@@ -54,7 +54,7 @@ class BitMarket {
     return axios.post(Env.API_URL, postQueryString, {
         headers: this.getApiHeaders(postQueryString)
       }).then(function (response) {
-        return response.data.data
+        return response.data.data[type]
       }).catch(error => {
         this.Logger.error(`Error when fetching account info ${error}`)
       });
