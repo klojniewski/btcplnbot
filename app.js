@@ -20,12 +20,18 @@ class App {
     Logger.info('Bot Init, getting account info')
     this.Bitmarket.getInfo().then((data) => {
       this.accountInfo = data.account
-      this.available = data.balances.available.PLN
+      this.available = data.balances.available.PLN - Env.MONEY_LEFT
       this.Calculator = new Calculator(this.accountInfo)
       this.start()
     })
   }
   start () {
+    // this.Bitmarket.getTrades().then((data) => {
+    //   console.log(data.results)
+    //   const trade = this.Bitmarket.getTrade(94708, data.results)
+    //   console.log(trade)
+    // });
+    // return;
     this.buyBtc()
     this.sellBtc()
 
@@ -78,7 +84,7 @@ class App {
     const amountPerOrder = this.available / Env.ORDER_COUNT
     Logger.info(`Will create ${Env.ORDER_COUNT} orders ${amountPerOrder} PLN each`)
 
-    let startPrice = Math.floor(currentPrice)
+    let startPrice = Math.floor(currentPrice) - Env.START_PRICE_MARGIN
     Logger.info(`Orders will start from ${startPrice} PLN`)
     for (let i = 0; i < Env.ORDER_COUNT; i++) {
       const orderPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
