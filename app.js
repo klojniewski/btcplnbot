@@ -1,7 +1,7 @@
 const Env = require('./config/env')
 const Mongoose = require('mongoose')
 const Log = require('./modules/log')
-const Bitmarket = require('./modules/bitmarket')
+const Bitbay = require('./modules/Bitbay')
 const Calculator = require('./modules/calculator')
 const Order = require('./models/order')
 const colors = require('colors')
@@ -12,24 +12,23 @@ const Logger = new Log()
 class App {
   constructor () {
     this.profit = 0
-    this.Bitmarket = new Bitmarket(Logger)
+    this.Bitbay = new Bitbay(Logger)
     Mongoose.connect(Env.MONGO_CONNECTION_STRING)
     Logger.bold('Bot instance created')
   }
   init () {
     Logger.info('Bot Init, getting account info')
-    this.Bitmarket.getInfo().then((data) => {
-      this.accountInfo = data.account
-      this.available = data.balances.available.PLN - Env.MONEY_LEFT
-      this.Calculator = new Calculator(this.accountInfo)
+    this.Bitbay.getPLNBalance().then(PLN => {
+      this.available = PLN - Env.MONEY_LEFT
+      this.Calculator = new Calculator()
       this.Creator = new OrderCreator(this.Calculator, Logger)
       this.start()
     })
   }
   start () {
-    // this.Bitmarket.getTrades().then((data) => {
+    // this.Bitbay.getTrades().then((data) => {
     //   console.log(data.results)
-    //   const trade = this.Bitmarket.getTrade(94708, data.results)
+    //   const trade = this.Bitbay.getTrade(94708, data.results)
     //   console.log(trade)
     // });
     // return;
@@ -43,7 +42,7 @@ class App {
   buyBtc () {
     if (this.available > 1) {
         // check current price
-      this.Bitmarket.getBuyPrice().then((buyPrice) => {
+      this.Bitbay.getBuyPrice().then((buyPrice) => {
         // create orders
         this.createBuyOrders(buyPrice)
       })
@@ -54,7 +53,7 @@ class App {
   sellBtc () {
     Logger.info(`Check if order has been made`)
 
-    this.Bitmarket.getTrades().then((trades) => {
+    this.Bitbay.getTrades().then((trades) => {
       Logger.info(`Fetched last ${trades.length} trades`)
       const tradesIds = trades.map(order => {
         return order.id
@@ -71,7 +70,7 @@ class App {
             pendingOrderIds.push(parseInt(order.id, 10))
           }
         })
-        this.Bitmarket.getOrders().then((orders) => {
+        this.Bitbay.getOrders().then((orders) => {
           const buyOrdersIds = orders.map(order => {
             return order.id
           })
@@ -101,15 +100,14 @@ class App {
     currentPrice = Math.floor(currentPrice)
     Logger.info(`Current BTC Price is: ${currentPrice} PLN`)
     const ordersToCreate = this.Creator.create(currentPrice, this.available)
-
     ordersToCreate.forEach(orderToCreate => {
       if (orderToCreate.estimatedProfit > 0) {
-        this.Bitmarket.createBuyOrder(orderToCreate).then((resp) => {
-          if (resp.id) {
+        this.Bitbay.createBuyOrder(orderToCreate).then((resp) => {
+          if (resp.order_id) {
             this.available = this.available - orderToCreate.cost
-            orderToCreate.id = resp.id
+            orderToCreate.id = resp.order_id
             Logger.info(`Order created ${orderToCreate.id}, cash left: ${this.available}`)
-            Order(ordersToCreate).save(error => {
+            Order(orderToCreate).save(error => {
               if (error) {
                 Logger.error(`Failed to create order ${orderToCreate.id} with errro ${error}`)
               }

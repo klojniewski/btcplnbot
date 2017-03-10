@@ -1,8 +1,8 @@
 const Env = require('../config/env.js')
 
 class Calculator {
-  constructor (accountInfo) {
-    this.commissionMaker = accountInfo.commissionMaker
+  constructor () {
+    this.commissionMaker = Env.COMMISION
   }
   getSellPrice (buyPrice) {
     return buyPrice + Env.SELL_PRICE_MARGIN
@@ -14,7 +14,7 @@ class Calculator {
     return plnValue * this.commissionMaker / 100
   }
   getProfit (buySize, buyPrice, sellSize, sellPrice) {
-    const buy = buySize * buyPrice;
+    const buy = buySize * buyPrice
     const sell = sellSize * sellPrice
     return sell - this.getSellCommision(sell) - buy
   }

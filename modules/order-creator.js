@@ -13,16 +13,16 @@ class OrderCreator {
     this.Logger.info(`Will create ${Env.ORDER_COUNT} orders ${amountPerOrder} PLN each`)
     this.Logger.info(`Orders will start from ${startPrice} PLN`)
     for (let i = 0; i < Env.ORDER_COUNT; i++) {
-      const orderPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
-      const size = Number(amountPerOrder / orderPrice).toFixed(8)
-      const commisionBuy = Number(this.Calculator.getBayCommision(size)).toFixed(10)
+      const buyPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
+      const size = Number(amountPerOrder / buyPrice).toFixed(8)
+      const commisionBuy = Number(this.Calculator.getBayCommision(size)).toFixed(8)
       const sizeAfterCommision = size - commisionBuy
-      const sellPrice = this.Calculator.getSellPrice(orderPrice)
+      const sellPrice = this.Calculator.getSellPrice(buyPrice)
       const commisionSell = this.Calculator.getSellCommision(sellPrice * sizeAfterCommision)
-      const cost = size * orderPrice
-      const estimatedProfit = this.Calculator.getProfit(size, orderPrice, sizeAfterCommision, sellPrice)
+      const cost = Number(size * buyPrice).toFixed(8)
+      const estimatedProfit = this.Calculator.getProfit(size, buyPrice, sizeAfterCommision, sellPrice)
       orders.push({
-        buyPrice: orderPrice,
+        buyPrice,
         cost,
         sellPrice,
         size,
@@ -32,7 +32,8 @@ class OrderCreator {
         estimatedProfit,
         dateCreated: new Date(),
         dateFinished: null,
-        status: Env.STATUS_NEW
+        status: Env.STATUS_NEW,
+        commisionRate: Env.COMMISION
       })
     }
     return orders
