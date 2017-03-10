@@ -1,14 +1,14 @@
 const Env = require('../config/env')
 const axios = require('axios')
 const queryString = require('query-string')
-const CryptoJS = require("crypto-js");
+const CryptoJS = require('crypto-js')
 
 class BitMarket {
   constructor (Logger) {
     this.Logger = Logger
   }
   time () {
-    return Math.floor(new Date().getTime() / 1000);
+    return Math.floor(new Date().getTime() / 1000)
   }
   getApiHeaders (postQueryString) {
     const signagure = CryptoJS.HmacSHA512(postQueryString, Env.KEY_PRIVATE)
@@ -34,12 +34,12 @@ class BitMarket {
     const postQueryString = queryString.stringify(data)
 
     return axios.post(Env.API_URL, postQueryString, {
-        headers: this.getApiHeaders(postQueryString)
-      }).then(function (response) {
-        return response.data.data.results
-      }).catch(error => {
-        this.Logger.error(`Error when fetching account info ${error}`)
-      });
+      headers: this.getApiHeaders(postQueryString)
+    }).then(function (response) {
+      return response.data.data.results
+    }).catch(error => {
+      this.Logger.error(`Error when fetching account info ${error}`)
+    })
   }
   getOrders (type = 'buy') {
     const method = 'orders'
@@ -47,17 +47,17 @@ class BitMarket {
     const data = {
       method,
       tonce: this.time(),
-      market,
+      market
     }
     const postQueryString = queryString.stringify(data)
 
     return axios.post(Env.API_URL, postQueryString, {
-        headers: this.getApiHeaders(postQueryString)
-      }).then(function (response) {
-        return response.data.data[type]
-      }).catch(error => {
-        this.Logger.error(`Error when fetching account info ${error}`)
-      });
+      headers: this.getApiHeaders(postQueryString)
+    }).then(function (response) {
+      return response.data.data[type]
+    }).catch(error => {
+      this.Logger.error(`Error when fetching account info ${error}`)
+    })
   }
   getInfo () {
     const method = 'info'
@@ -68,12 +68,16 @@ class BitMarket {
     const postQueryString = queryString.stringify(data)
 
     return axios.post(Env.API_URL, postQueryString, {
-        headers: this.getApiHeaders(postQueryString)
-      }).then(function (response) {
-        return response.data.data
-      }).catch(error => {
-        this.Logger.error(`Error when fetching account info ${error}`)
-      });
+      headers: this.getApiHeaders(postQueryString)
+    }).then(function (response) {
+      if (!response.data.data) {
+        const error = `Error when fetching user info`
+        return Promise.reject(error)
+      }
+      return response.data.data
+    }).catch(error => {
+      this.Logger.error(`Error when fetching account info ${error}`)
+    })
   }
   getBuyPrice () {
     return axios.get(Env.TICKER_URL)
@@ -82,7 +86,7 @@ class BitMarket {
       })
       .catch(error => {
         this.Logger.error(`Error when fetching ticker ${error}`)
-      });
+      })
   }
   getSellPrice () {
     return axios.get(Env.TICKER_URL)
@@ -91,7 +95,7 @@ class BitMarket {
       })
       .catch(error => {
         this.Logger.error(`Error when fetching ticker ${error}`)
-      });
+      })
   }
   createSellOrder () {
     return axios.get(Env.TICKER_URL)
@@ -100,7 +104,7 @@ class BitMarket {
       })
       .catch(error => {
         this.Logger.error(`Error when fetching ticker ${error}`)
-      });
+      })
   }
   createBuyOrder (order) {
     const method = 'trade'
@@ -122,18 +126,18 @@ class BitMarket {
     const postQueryString = queryString.stringify(data)
 
     return axios.post(Env.API_URL, postQueryString, {
-        headers: this.getApiHeaders(postQueryString)
-      }).then(response => {
-        if (!response.data.data) {
-          console.log(response)
-          const error = `Error when creating order ${response.error}, ${response.errorMsg}`
-          return Promise.reject(error);
-        }
-        return response.data.data
-      }).catch(error => {
-        console.log(error)
-        this.Logger.error(error)
-      });
+      headers: this.getApiHeaders(postQueryString)
+    }).then(response => {
+      if (!response.data.data) {
+        console.log(response)
+        const error = `Error when creating order ${response.error}, ${response.errorMsg}`
+        return Promise.reject(error)
+      }
+      return response.data.data
+    }).catch(error => {
+      console.log(error)
+      this.Logger.error(error)
+    })
   }
 }
 module.exports = BitMarket

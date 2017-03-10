@@ -3,9 +3,9 @@ const Mongoose = require('mongoose')
 const Log = require('./modules/log')
 const Bitmarket = require('./modules/bitmarket')
 const Calculator = require('./modules/calculator')
-const uuid = require('uuid');
 const Order = require('./models/order')
 const colors = require('colors')
+const OrderCreator = require('./modules/order-creator')
 
 const Logger = new Log()
 
@@ -22,6 +22,7 @@ class App {
       this.accountInfo = data.account
       this.available = data.balances.available.PLN - Env.MONEY_LEFT
       this.Calculator = new Calculator(this.accountInfo)
+      this.Creator = new OrderCreator(this.Calculator, Logger)
       this.start()
     })
   }
@@ -32,8 +33,8 @@ class App {
     //   console.log(trade)
     // });
     // return;
-    // this.buyBtc()
-    this.sellBtc()
+    this.buyBtc()
+    // this.sellBtc()
 
     // setTimeout(() => {
     //   this.start()
@@ -42,12 +43,12 @@ class App {
   buyBtc () {
     if (this.available > 1) {
         // check current price
-        this.Bitmarket.getBuyPrice().then((buyPrice) => {
+      this.Bitmarket.getBuyPrice().then((buyPrice) => {
         // create orders
         this.createBuyOrders(buyPrice)
       })
     } else {
-      Logger.info(`Not enough money to buy BTC, current cash (${this.available})`.red)
+      Logger.info(`Not enough money to buy BTC, current cash (${this.available})`)
     }
   }
   sellBtc () {
@@ -91,60 +92,34 @@ class App {
             Logger.error(`Lost ${lostOrders.length} orders: ${lostOrders.join(',')}`)
           }
         })
-      });
+      })
     })
   }
   createSellOrders (sellPrice) {
   }
   createBuyOrders (currentPrice) {
+    currentPrice = Math.floor(currentPrice)
     Logger.info(`Current BTC Price is: ${currentPrice} PLN`)
+    const ordersToCreate = this.Creator.create(currentPrice, this.available)
 
-    // get available money
-    Logger.info(`Have ${this.available} to spent`)
-    const amountPerOrder = this.available / Env.ORDER_COUNT
-    Logger.info(`Will create ${Env.ORDER_COUNT} orders ${amountPerOrder} PLN each`)
-
-    let startPrice = Math.floor(currentPrice) - Env.START_PRICE_MARGIN
-    Logger.info(`Orders will start from ${startPrice} PLN`)
-    for (let i = 0; i < Env.ORDER_COUNT; i++) {
-      const orderPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
-      const size = Number(amountPerOrder / orderPrice).toFixed(8)
-      const commisionBuy = Number(this.Calculator.getBayCommision(size)).toFixed(10)
-      const sizeAfterCommision = size - commisionBuy
-      const sellPrice = this.Calculator.getSellPrice(orderPrice)
-      const commisionSell = this.Calculator.getSellCommision(sellPrice * sizeAfterCommision)
-      const estimatedProfit = this.Calculator.getProfit(size, orderPrice, sizeAfterCommision, sellPrice)
-      const order = {
-        buyPrice: orderPrice,
-        sellPrice,
-        size,
-        sizeAfterCommision,
-        commisionBuy,
-        commisionSell,
-        estimatedProfit,
-        dateCreated: new Date(),
-        dateFinished: null,
-        status: Env.STATUS_NEW
-      }
-      if (estimatedProfit > 0) {
-        this.Bitmarket.createBuyOrder(order).then((resp) => {
+    ordersToCreate.forEach(orderToCreate => {
+      if (orderToCreate.estimatedProfit > 0) {
+        this.Bitmarket.createBuyOrder(orderToCreate).then((resp) => {
           if (resp.id) {
-            this.available = this.available - amountPerOrder
-            order.id = resp.id
-            Logger.info(`Order created ${order.id}, cash left: ${this.available}`)
-            Order(order).save(error => {
+            this.available = this.available - orderToCreate.cost
+            orderToCreate.id = resp.id
+            Logger.info(`Order created ${orderToCreate.id}, cash left: ${this.available}`)
+            Order(ordersToCreate).save(error => {
               if (error) {
-                Logger.error(`Failed to create order ${order.id } with errro ${error}`)
-                return
+                Logger.error(`Failed to create order ${orderToCreate.id} with errro ${error}`)
               }
             })
           }
         })
       } else {
         Logger.error(`Estimated profit is too low: ${estimatedProfit}, skipping`)
-        break
       }
-    }
+    })
   }
 }
 

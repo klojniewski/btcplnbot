@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 
 const orderSchema = mongoose.Schema({
   id: {type: String, required: true, unique: true},
+  cost: Number,
   buyPrice: Number,
   sellPrice: Number,
   size: Number,
@@ -18,7 +19,7 @@ const orderSchema = mongoose.Schema({
 })
 
 orderSchema.statics.findByStatusId = function (statusId, cb) {
-  return this.find({ status: statusId }, cb);
-};
+  return this.find({ status: statusId }, cb)
+}
 
 module.exports = mongoose.model('Order', orderSchema)
