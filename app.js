@@ -28,10 +28,13 @@ class App {
     this.tryToCreateBTCBuyOrders()
     setTimeout(() => {
       this.checkBTCBuyOrderStatus()
-    }, 1000)
+    }, 2 * 1000)
     setTimeout(() => {
       this.createBTCSellOrders()
-    }, 4000)
+    }, 4 * 1000)
+    setTimeout(() => {
+      this.checkBTCSellOrderStatus()
+    }, 6 * 1000)
   }
   tryToCreateBTCBuyOrders () {
     // buy only when cach available
@@ -85,6 +88,45 @@ class App {
       }
     })
   }
+  checkBTCSellOrderStatus () {
+    Logger.info(`Check if BTC Sell Order(s) have been sold.`)
+    Promise.all([
+      this.Bitbay.getOrders(),
+      Order.findByStatusId(Env.STATUS_TOBESOLD),
+      this.Bitbay.getBuyPrice()
+    ]).then(values => {
+      const [ marketOrders, databaseOrder, buyPrice ] = values
+      const activeOrders = this.Bitbay.filterActiveOrders(marketOrders)
+      const inActiveOrders = this.Bitbay.filterInActiveOrders(marketOrders)
+      let lostOrders = []
+      if (databaseOrder.length) {
+        Logger.info(`Found ${databaseOrder.length} BTC Sell Order(s) to check.`)
+      } else {
+        Logger.info(`No pending BTC Sell Orders to check.`)
+        return
+      }
+      databaseOrder.forEach(dbOrder => {
+        const dbOrderId = dbOrder.sellOrderId
+        const isActive = this.Bitbay.checkIfOrderIsActive(activeOrders, dbOrderId)
+        const isInActive = this.Bitbay.checkIfOrderIsInActive(inActiveOrders, dbOrderId)
+        const isSold = this.Bitbay.checkIfOrderIsBought(inActiveOrders, dbOrderId)
+
+        if (isSold) {
+          Logger.success(`#${dbOrderId} has been sold! Changing order status.`)
+          dbOrder.saveUpdatedStatus(Env.STATUS_SOLD)
+        } else if (isActive || isInActive) {
+          const priceMargin = Number(dbOrder.buyPrice - buyPrice).toFixed(2)
+          Logger.info(`#${dbOrderId} is waiting, ${dbOrder.buyPrice} vs ${buyPrice} (${priceMargin} PLN)`)
+        } else {
+          lostOrders.push(dbOrder)
+        }
+      })
+      if (lostOrders.length) {
+        const lostOrdersIds = lostOrders.map(order => order.buyOrderId)
+        Logger.error(`Lost ${lostOrders.length} orders: ${lostOrdersIds}`)
+      }
+    })
+  }
   createBTCSellOrders () {
     Order.findByStatusId(Env.STATUS_BOUGHT).then(orders => {
       if (orders.length) {
@@ -120,16 +162,16 @@ class App {
           if (resp.order_id) {
             this.available = this.available - orderToCreate.buyValue
             orderToCreate.buyOrderId = resp.order_id
-            Logger.info(`Order created ${orderToCreate.buyOrderId}, cash left: ${this.available}`)
+            Logger.info(`BTC Buy Order Created ${orderToCreate.buyOrderId}, cash left: ${this.available}.`)
             Order(orderToCreate).save(error => {
               if (error) {
-                Logger.error(`Failed to create order ${orderToCreate.buyOrderId} with errro ${error}`)
+                Logger.error(`Failed to create BTC Buy Order ${orderToCreate.buyOrderId} with error ${error}.`)
               }
             })
           }
         })
       } else {
-        Logger.error(`Estimated profit is too low: ${estimatedProfit}, skipping`)
+        Logger.error(`Estimated profit is too low: ${estimatedProfit}, skipping.`)
       }
     })
   }

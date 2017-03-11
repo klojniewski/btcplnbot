@@ -26,6 +26,9 @@ orderSchema.statics.findByStatusId = function (statusId, callback) {
 
 orderSchema.methods.saveUpdatedStatus = function (statusId, callback) {
   this.status = statusId
+  if (statusId === Env.STATUS_SOLD) {
+    this.dateFinished = new Date()
+  }
   this.save({}, callback)
 }
 
