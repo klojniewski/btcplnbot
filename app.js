@@ -116,7 +116,7 @@ class App {
           dbOrder.saveUpdatedStatus(Env.STATUS_SOLD)
         } else if (isActive || isInActive) {
           const priceMargin = Number(dbOrder.buyPrice - buyPrice).toFixed(2)
-          Logger.info(`#${dbOrderId} is waiting, ${dbOrder.buyPrice} vs ${buyPrice} (${priceMargin} PLN)`)
+          Logger.info(`#${dbOrderId} is waiting, ${dbOrder.sellPrice} vs ${buyPrice} (${priceMargin} PLN)`)
         } else {
           lostOrders.push(dbOrder)
         }
