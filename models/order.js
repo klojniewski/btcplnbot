@@ -3,19 +3,21 @@ const mongoose = require('mongoose')
 
 const orderSchema = mongoose.Schema({
   id: {type: String, required: true, unique: true},
-  cost: Number,
+  buyOrderId: {type: Number, required: true, unique: true},
   buyPrice: Number,
+  buySize: Number,
+  buyCommision: Number,
+  buyValue: Number,
+  sellOrderId: {type: Number, default: 0},
   sellPrice: Number,
-  size: Number,
-  sizeAfterCommision: Number,
-  commisionBuy: String,
-  commisionSell: String,
+  sellSize: Number,
+  sellCommision: Number,
+  sellValue: Number,
+  commisionRate: Number,
   estimatedProfit: Number,
-  dateCreated: String,
-  dateFinished: String,
-  allOrNothing: {type: Number, default: 1},
   status: {type: Number, default: Env.STATUS_NEW},
-  market: {type: String, default: 'BTCPLN'}
+  dateCreated: String,
+  dateFinished: String
 })
 
 orderSchema.statics.findByStatusId = function (statusId, callback) {

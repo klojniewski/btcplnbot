@@ -1,4 +1,5 @@
 const Env = require('../config/env.js')
+const uuidV1 = require('uuid/v1')
 
 class OrderCreator {
   constructor (Calculator, Logger) {
@@ -9,26 +10,38 @@ class OrderCreator {
     let startPrice = currentPrice - Env.START_PRICE_MARGIN
     let orders = []
     const amountPerOrder = available / Env.ORDER_COUNT
-    this.Logger.info(`Have ${available} to spent`)
-    this.Logger.info(`Will create ${Env.ORDER_COUNT} orders ${amountPerOrder} PLN each`)
-    this.Logger.info(`Orders will start from ${startPrice} PLN`)
+    this.Logger.info(`Have ${available} PLN to invest.`)
+    this.Logger.info(`Will create ${Env.ORDER_COUNT} BTC Buy Order(s) ${amountPerOrder} PLN each.`)
+    this.Logger.info(`BTC Buy Orders will start from ${startPrice} PLN`)
     for (let i = 0; i < Env.ORDER_COUNT; i++) {
+      const id = uuidV1()
+
+      const buyOrderId = 0
       const buyPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
-      const size = Number(amountPerOrder / buyPrice).toFixed(8)
-      const commisionBuy = Number(this.Calculator.getBayCommision(size)).toFixed(8)
-      const sizeAfterCommision = size - commisionBuy
+      const buySize = Number(amountPerOrder / buyPrice).toFixed(8)
+      const buyCommision = Number(this.Calculator.getBayCommision(buySize)).toFixed(8)
+      const buyValue = Number(buySize * buyPrice).toFixed(8)
+
+      const sellOrderId = 0
       const sellPrice = this.Calculator.getSellPrice(buyPrice)
-      const commisionSell = this.Calculator.getSellCommision(sellPrice * sizeAfterCommision)
-      const cost = Number(size * buyPrice).toFixed(8)
-      const estimatedProfit = this.Calculator.getProfit(size, buyPrice, sizeAfterCommision, sellPrice)
+      const sellSize = buySize - buyCommision
+      const sellCommision = this.Calculator.getSellCommision(sellPrice * sellSize)
+      const sellValue = Number(sellSize * sellPrice).toFixed(8)
+
+      const estimatedProfit = this.Calculator.getProfit(buyValue, sellValue)
+
       orders.push({
+        id,
+        buyOrderId,
         buyPrice,
-        cost,
+        buySize,
+        buyCommision,
+        buyValue,
+        sellOrderId,
         sellPrice,
-        size,
-        sizeAfterCommision,
-        commisionBuy,
-        commisionSell,
+        sellSize,
+        sellCommision,
+        sellValue,
         estimatedProfit,
         dateCreated: new Date(),
         dateFinished: null,

@@ -139,7 +139,7 @@ class Bitbay {
     const method = 'trade'
     const type = 'sell'
     const currency = 'BTC'
-    const amount = parseFloat(order.sizeAfterCommision)
+    const amount = order.sellSize
     const payment_currency = 'PLN'
     const rate = order.sellPrice
     const data = {
@@ -157,13 +157,12 @@ class Bitbay {
     return axios.post(Env.API_URL, postQueryString, {
       headers: this.getApiHeaders(postQueryString)
     }).then(response => {
-      if (!response.data) {
+      if (!response.data || !response.data.success) {
         const error = `Error when creating order ${response.error}, ${response.errorMsg}`
         return Promise.reject(error)
       }
       return response.data
     }).catch(error => {
-      console.log(error)
       this.Logger.error(error)
     })
   }
@@ -176,23 +175,30 @@ class Bitbay {
   filterOrders (orders, status) {
     return orders.filter(order => order.status === status)
   }
-  findBoughtOrder (order, inActiveOrders) {
+  checkIfOrderIsBought (inActiveOrders, orderId) {
     const boughtOrder = inActiveOrders.filter(inActiveOrder => {
-      return parseInt(order.id, 10) === inActiveOrder.order_id &&
+      return orderId === inActiveOrder.order_id &&
         inActiveOrder.units === '0.00000000'
     })
     return boughtOrder.length === 1
   }
-  createBuyOrder (order) {
+  checkIfOrderIsActive (activeOrders, orderId) {
+    return activeOrders.find(order => parseInt(order.order_id) === orderId)
+  }
+  checkIfOrderIsInActive (inActiveOrders, orderId) {
+    return inActiveOrders.find(order => parseInt(order.order_id) === orderId)
+  }
+  createBTCBuyOrder (order) {
     const method = 'trade'
     const currency = 'BTC'
+    const payment_currency = 'PLN'
     const type = 'buy'
-    const amount = parseFloat(order.size)
+    const amount = parseFloat(order.buySize)// probably can remove parseFloat
     const rate = order.buyPrice
     const data = {
       method,
       currency,
-      payment_currency: 'PLN',
+      payment_currency,
       type,
       amount,
       rate,
