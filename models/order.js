@@ -18,8 +18,13 @@ const orderSchema = mongoose.Schema({
   market: {type: String, default: 'BTCPLN'}
 })
 
-orderSchema.statics.findByStatusId = function (statusId, cb) {
-  return this.find({ status: statusId }, cb)
+orderSchema.statics.findByStatusId = function (statusId, callback) {
+  return this.find({ status: statusId }, callback)
+}
+
+orderSchema.methods.saveUpdatedStatus = function (statusId, callback) {
+  this.status = statusId
+  this.save({}, callback)
 }
 
 module.exports = mongoose.model('Order', orderSchema)

@@ -40,6 +40,43 @@ class Bitbay {
       this.Logger.error(`Error when fetching account info ${error}`)
     })
   }
+  getTransactions () {
+    const method = 'transactions'
+    const market = 'BTC-PLN'
+    const data = {
+      method,
+      market,
+      moment: this.time()
+    }
+    const postQueryString = queryString.stringify(data)
+
+    return axios.post(Env.API_URL, postQueryString, {
+      headers: this.getApiHeaders(postQueryString)
+    }).then(function (response) {
+      return response.data
+    }).catch(error => {
+      this.Logger.error(`Error when fetching account info ${error}`)
+    })
+  }
+  getHistory () {
+    const method = 'history'
+    const currency = 'BTC'
+    const data = {
+      method,
+      currency,
+      limit: 20,
+      moment: this.time()
+    }
+    const postQueryString = queryString.stringify(data)
+
+    return axios.post(Env.API_URL, postQueryString, {
+      headers: this.getApiHeaders(postQueryString)
+    }).then(function (response) {
+      return response.data
+    }).catch(error => {
+      this.Logger.error(`Error when fetching account info ${error}`)
+    })
+  }
   getTrades () {
     const method = 'trades'
     const market = 'BTCPLN'
@@ -98,14 +135,37 @@ class Bitbay {
         this.Logger.error(`Error when fetching ticker ${error}`)
       })
   }
-  createSellOrder () {
-    return axios.get(Env.TICKER_URL)
-      .then(function (response) {
-        return Number(response.data.bid)
-      })
-      .catch(error => {
-        this.Logger.error(`Error when fetching ticker ${error}`)
-      })
+  createBTCSellOrder (order) {
+    const method = 'trade'
+    const type = 'sell'
+    const currency = 'BTC'
+    const amount = parseFloat(order.sizeAfterCommision)
+    const payment_currency = 'PLN'
+    const rate = order.sellPrice
+    const data = {
+      method,
+      currency,
+      payment_currency,
+      type,
+      amount,
+      rate,
+      moment: this.time()
+    }
+
+    const postQueryString = queryString.stringify(data)
+
+    return axios.post(Env.API_URL, postQueryString, {
+      headers: this.getApiHeaders(postQueryString)
+    }).then(response => {
+      if (!response.data) {
+        const error = `Error when creating order ${response.error}, ${response.errorMsg}`
+        return Promise.reject(error)
+      }
+      return response.data
+    }).catch(error => {
+      console.log(error)
+      this.Logger.error(error)
+    })
   }
   filterActiveOrders (orders) {
     return this.filterOrders(orders, 'active')
@@ -116,13 +176,19 @@ class Bitbay {
   filterOrders (orders, status) {
     return orders.filter(order => order.status === status)
   }
+  findBoughtOrder (order, inActiveOrders) {
+    const boughtOrder = inActiveOrders.filter(inActiveOrder => {
+      return parseInt(order.id, 10) === inActiveOrder.order_id &&
+        inActiveOrder.units === '0.00000000'
+    })
+    return boughtOrder.length === 1
+  }
   createBuyOrder (order) {
     const method = 'trade'
     const currency = 'BTC'
     const type = 'buy'
     const amount = parseFloat(order.size)
     const rate = order.buyPrice
-    const allOrNothing = 0
     const data = {
       method,
       currency,
@@ -130,7 +196,6 @@ class Bitbay {
       type,
       amount,
       rate,
-      allOrNothing,
       moment: this.time()
     }
 
@@ -139,7 +204,6 @@ class Bitbay {
     return axios.post(Env.API_URL, postQueryString, {
       headers: this.getApiHeaders(postQueryString)
     }).then(response => {
-      console.log(response)
       if (!response.data) {
         const error = `Error when creating order ${response.error}, ${response.errorMsg}`
         return Promise.reject(error)

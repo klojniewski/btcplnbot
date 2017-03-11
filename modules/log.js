@@ -12,7 +12,7 @@ class Log {
     Winston.error('error', message.red)
   }
   success (message) {
-    Winston.log('success', message.green)
+    Winston.info('success', message.green)
   }
   extra (message) {
     Winston.info('info', message.rainbow)
