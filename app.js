@@ -14,6 +14,7 @@ class App {
     this.profit = 0
     this.Bitbay = new Bitbay(Logger)
     Mongoose.connect(Env.MONGO_CONNECTION_STRING)
+    Mongoose.Promise = global.Promise
     Logger.bold('Bot instance created')
   }
   init () {
@@ -32,14 +33,15 @@ class App {
     //   console.log(trade)
     // });
     // return;
-    this.buyBtc()
-    // this.sellBtc()
+    // this.buyBtc()
+    this.sellBtc()
 
     // setTimeout(() => {
     //   this.start()
     // }, 3000)
   }
   buyBtc () {
+    // buy only when cach available
     if (this.available > 1) {
         // check current price
       this.Bitbay.getBuyPrice().then((buyPrice) => {
@@ -47,17 +49,44 @@ class App {
         this.createBuyOrders(buyPrice)
       })
     } else {
-      Logger.info(`Not enough money to buy BTC, current cash (${this.available})`)
+      Logger.info(`Not enough money to buy BTC, current cash (${this.available}) PLN`)
     }
   }
   sellBtc () {
     Logger.info(`Check if order has been made`)
 
-    this.Bitbay.getTrades().then((trades) => {
-      Logger.info(`Fetched last ${trades.length} trades`)
-      const tradesIds = trades.map(order => {
-        return order.id
+    Promise.all([
+      this.Bitbay.getOrders(),
+      Order.findByStatusId(Env.STATUS_NEW),
+      this.Bitbay.getBuyPrice()
+    ]).then(values => {
+      const [ marketOrders, databaseOrder, buyPrice ] = values
+      const activeOrders = this.Bitbay.filterActiveOrders(marketOrders)
+      const inActiveOrders = this.Bitbay.filterInActiveOrders(marketOrders)
+      let lostOrders = []
+      databaseOrder.forEach(dbOrder => {
+        const dbOrderId = parseInt(dbOrder.id)
+        const isActive = activeOrders.find(order => parseInt(order.order_id) === dbOrderId)
+        const isInActive = inActiveOrders.find(order => parseInt(order.order_id) === dbOrderId)
+
+        if (isActive || isInActive) {
+          const priceMargin = Number(dbOrder.buyPrice - buyPrice).toFixed(2)
+          Logger.info(`#${dbOrderId} is waiting, ${dbOrder.buyPrice} vs ${buyPrice} (${priceMargin} PLN)`)
+        } else {
+          lostOrders.push(dbOrderId)
+        }
       })
+      if (lostOrders.length) {
+        Logger.error(`Lost ${lostOrders.length} orders: ${lostOrders.join(',')}`)
+      }
+    })
+
+    return
+    this.Bitbay.getOrders().then(trades => {
+      const activeOrders = trades.filter(trade => trade.status === 'active')
+      const inActiveOrders = trades.filter(trade => trade.status === 'inactive')
+
+      Logger.info(`Currently you have ${trades.length} active order(s)`)
       Order.findByStatusId(Env.STATUS_NEW, (error, newOrders) => {
         Logger.info(`Found ${newOrders.length} pending BUY in DB`)
         let pendingOrderIds = []
@@ -70,6 +99,7 @@ class App {
             pendingOrderIds.push(parseInt(order.id, 10))
           }
         })
+        return
         this.Bitbay.getOrders().then((orders) => {
           const buyOrdersIds = orders.map(order => {
             return order.id

@@ -22,6 +22,24 @@ class Bitbay {
       return trade.id === tradeId
     })[0]
   }
+  getOrders () {
+    const method = 'orders'
+    const market = 'BTCPLN'
+    const data = {
+      method,
+      limit: Env.TRADES_COUNT,
+      moment: this.time()
+    }
+    const postQueryString = queryString.stringify(data)
+
+    return axios.post(Env.API_URL, postQueryString, {
+      headers: this.getApiHeaders(postQueryString)
+    }).then(function (response) {
+      return response.data
+    }).catch(error => {
+      this.Logger.error(`Error when fetching account info ${error}`)
+    })
+  }
   getTrades () {
     const method = 'trades'
     const market = 'BTCPLN'
@@ -37,24 +55,6 @@ class Bitbay {
       headers: this.getApiHeaders(postQueryString)
     }).then(function (response) {
       return response.data.data.results
-    }).catch(error => {
-      this.Logger.error(`Error when fetching account info ${error}`)
-    })
-  }
-  getOrders (type = 'buy') {
-    const method = 'orders'
-    const market = 'BTCPLN'
-    const data = {
-      method,
-      moment: this.time(),
-      market
-    }
-    const postQueryString = queryString.stringify(data)
-
-    return axios.post(Env.API_URL, postQueryString, {
-      headers: this.getApiHeaders(postQueryString)
-    }).then(function (response) {
-      return response.data.data[type]
     }).catch(error => {
       this.Logger.error(`Error when fetching account info ${error}`)
     })
@@ -106,6 +106,15 @@ class Bitbay {
       .catch(error => {
         this.Logger.error(`Error when fetching ticker ${error}`)
       })
+  }
+  filterActiveOrders (orders) {
+    return this.filterOrders(orders, 'active')
+  }
+  filterInActiveOrders (orders) {
+    return this.filterOrders(orders, 'inactive')
+  }
+  filterOrders (orders, status) {
+    return orders.filter(order => order.status === status)
   }
   createBuyOrder (order) {
     const method = 'trade'
