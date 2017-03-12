@@ -39,17 +39,20 @@ class App {
     }, 6 * 1000)
   }
   tryToCreateBTCBuyOrders () {
-    // buy only when cach available
-    if (this.available > 1) {
-        // check current price
-      this.Bitbay.getBuyPrice().then(buyPrice => {
-        // create orders
-        this.createBTCBuyOrders(buyPrice)
-      })
-    } else {
-      const cash = Number(this.available).toFixed(2)
-      Logger.info(`Not enough cash to create BTC Buy Orders, current cash: ${cash} PLN.`)
-    }
+    Order.findActive().then(activeOrders => {
+      if (activeOrders.length < Env.ACTIVE_ORDERS_LIMIT) {
+        if (this.available > 1) {
+          // check current price
+          this.Bitbay.getBuyPrice().then(buyPrice => {
+            // create orders
+            this.createBTCBuyOrders(buyPrice)
+          })
+        } else {
+          const cash = Number(this.available).toFixed(2)
+          Logger.info(`Not enough cash to create BTC Buy Orders, current cash: ${cash} PLN.`)
+        }
+      }
+    })
   }
   checkBTCBuyOrderStatus () {
     Logger.info(`Check if BTC Buy Order(s) have been made.`)
