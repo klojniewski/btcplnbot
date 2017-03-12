@@ -7,6 +7,7 @@ const Order = require('./models/order')
 const colors = require('colors')
 const OrderCreator = require('./modules/order-creator')
 const OrderChecker = require('./modules/order-checker')
+const WebApp = require('./modules/webapp')
 const Logger = new Log()
 
 class App {
@@ -24,6 +25,8 @@ class App {
       this.Calculator = new Calculator()
       this.Creator = new OrderCreator(this.Calculator, Logger, this.Bitbay)
       this.earnMoney()
+      this.webApp = new WebApp()
+      this.webApp.run()
     })
   }
   earnMoney () {
