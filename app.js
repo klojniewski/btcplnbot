@@ -6,6 +6,7 @@ const Calculator = require('./modules/calculator')
 const Order = require('./models/order')
 const colors = require('colors')
 const OrderCreator = require('./modules/order-creator')
+const OrderChecker = require('./modules/order-checker')
 const Logger = new Log()
 
 class App {
@@ -13,6 +14,7 @@ class App {
     Mongoose.connect(Env.MONGO_CONNECTION_STRING)
     Mongoose.Promise = global.Promise
     this.Bitbay = new Bitbay(Logger)
+    this.Checker = new OrderChecker(this.Bitbay)
     Logger.bold('Bot instance created.')
   }
   init () {
@@ -51,22 +53,17 @@ class App {
   }
   checkBTCBuyOrderStatus () {
     Logger.info(`Check if BTC Buy Order(s) have been made.`)
-    Promise.all([
-      this.Bitbay.getOrders(),
-      Order.findByStatusId(Env.STATUS_NEW),
-      this.Bitbay.getBuyPrice()
-    ]).then(values => {
-      const [ marketOrders, databaseOrder, buyPrice ] = values
-      const activeOrders = this.Bitbay.filterActiveOrders(marketOrders)
-      const inActiveOrders = this.Bitbay.filterInActiveOrders(marketOrders)
+    this.Checker.getOrders(Env.STATUS_NEW).then(data => {
+      const { activeOrders, inActiveOrders, databaseOrders } = data.orders
+      const buyPrice = data.buyPrice
       let lostOrders = []
-      if (databaseOrder.length) {
-        Logger.info(`Found ${databaseOrder.length} BTC Buy Order(s) to check.`)
+      if (databaseOrders.length) {
+        Logger.info(`Found ${databaseOrders.length} BTC Buy Order(s) to check.`)
       } else {
         Logger.info(`No pending BTC Buy Orders to check.`)
         return
       }
-      databaseOrder.forEach(dbOrder => {
+      databaseOrders.forEach(dbOrder => {
         const dbOrderId = dbOrder.buyOrderId
         const isActive = this.Bitbay.checkIfOrderIsActive(activeOrders, dbOrderId)
         const isInActive = this.Bitbay.checkIfOrderIsInActive(inActiveOrders, dbOrderId)
@@ -90,29 +87,26 @@ class App {
   }
   checkBTCSellOrderStatus () {
     Logger.info(`Check if BTC Sell Order(s) have been sold.`)
-    Promise.all([
-      this.Bitbay.getOrders(),
-      Order.findByStatusId(Env.STATUS_TOBESOLD),
-      this.Bitbay.getBuyPrice()
-    ]).then(values => {
-      const [ marketOrders, databaseOrder, buyPrice ] = values
-      const activeOrders = this.Bitbay.filterActiveOrders(marketOrders)
-      const inActiveOrders = this.Bitbay.filterInActiveOrders(marketOrders)
+
+    this.Checker.getOrders(Env.STATUS_TOBESOLD).then(data => {
+      const { activeOrders, inActiveOrders, databaseOrders } = data.orders
+      const buyPrice = data.buyPrice
       let lostOrders = []
-      if (databaseOrder.length) {
-        Logger.info(`Found ${databaseOrder.length} BTC Sell Order(s) to check.`)
+      if (databaseOrders.length) {
+        Logger.info(`Found ${databaseOrders.length} BTC Sell Order(s) to check.`)
       } else {
         Logger.info(`No pending BTC Sell Orders to check.`)
         return
       }
-      databaseOrder.forEach(dbOrder => {
+      databaseOrders.forEach(dbOrder => {
         const dbOrderId = dbOrder.sellOrderId
         const isActive = this.Bitbay.checkIfOrderIsActive(activeOrders, dbOrderId)
         const isInActive = this.Bitbay.checkIfOrderIsInActive(inActiveOrders, dbOrderId)
         const isSold = this.Bitbay.checkIfOrderIsBought(inActiveOrders, dbOrderId)
 
         if (isSold) {
-          Logger.success(`#${dbOrderId} has been sold! Changing order status.`)
+          const profit = Number(dbOrder.estimatedProfit).toFixed(2)
+          Logger.success(`#${dbOrderId} has been sold! Profit: ${profit} PLN. Changing order status.`)
           dbOrder.saveUpdatedStatus(Env.STATUS_SOLD)
         } else if (isActive || isInActive) {
           const priceMargin = Number(dbOrder.buyPrice - buyPrice).toFixed(2)
@@ -155,7 +149,7 @@ class App {
   createBTCBuyOrders (currentPrice) {
     currentPrice = Math.floor(currentPrice)
     Logger.info(`Current BTC Price is: ${currentPrice} PLN, creating BTC Buy Orders.`)
-    const ordersToCreate = this.Creator.create(currentPrice, this.available)
+    const ordersToCreate = this.Creator.getOrders(currentPrice, this.available)
     ordersToCreate.forEach(orderToCreate => {
       if (orderToCreate.estimatedProfit > 0) {
         this.Bitbay.createBTCBuyOrder(orderToCreate).then(resp => {
