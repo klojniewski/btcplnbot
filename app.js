@@ -23,10 +23,10 @@ class App {
       this.available = PLN - Env.MONEY_LEFT
       this.Calculator = new Calculator()
       this.Creator = new OrderCreator(this.Calculator, Logger, this.Bitbay)
-      this.start()
+      this.earnMoney()
     })
   }
-  start () {
+  earnMoney () {
     this.createBTCBuyOrders()
     setTimeout(() => {
       this.checkBTCBuyOrderStatus()
@@ -40,7 +40,7 @@ class App {
     if (Env.IN_LOOP) {
       setTimeout(() => {
         Logger.bold('Another round.')
-        this.start()
+        this.earnMoney()
       }, 60 * 1000)
     }
   }
