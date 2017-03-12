@@ -37,6 +37,12 @@ class App {
     setTimeout(() => {
       this.checkBTCSellOrderStatus()
     }, 6 * 1000)
+    if (Env.IN_LOOP) {
+      setTimeout(() => {
+        Logger.bold('Another round.')
+        this.start()
+      }, 60 * 1000)
+    }
   }
   createBTCBuyOrders () {
     Order.findActive().then(activeOrders => {
