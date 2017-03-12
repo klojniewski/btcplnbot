@@ -115,7 +115,7 @@ class App {
 
         if (isSold) {
           const profit = Number(dbOrder.estimatedProfit).toFixed(2)
-          Logger.success(`#${dbOrderId} has been sold! Profit: ${profit} PLN. Changing order status.`)
+          Logger.success(`#${dbOrderId} has been sold! Profit: ${profit} PLN. Changing Order status.`)
           dbOrder.saveUpdatedStatus(Env.STATUS_SOLD)
         } else if (isActive || isInActive) {
           const priceMargin = Number(dbOrder.buyPrice - buyPrice).toFixed(2)
