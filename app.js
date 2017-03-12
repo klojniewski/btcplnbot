@@ -30,13 +30,13 @@ class App {
     this.createBTCBuyOrders()
     setTimeout(() => {
       this.checkBTCBuyOrderStatus()
-    }, 2 * 1000)
-    setTimeout(() => {
-      this.createBTCSellOrders()
     }, 4 * 1000)
     setTimeout(() => {
-      this.checkBTCSellOrderStatus()
+      this.createBTCSellOrders()
     }, 6 * 1000)
+    setTimeout(() => {
+      this.checkBTCSellOrderStatus()
+    }, 8 * 1000)
     if (Env.IN_LOOP) {
       setTimeout(() => {
         Logger.bold('Another round.')

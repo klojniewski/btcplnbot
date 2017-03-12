@@ -75,7 +75,7 @@ class OrderCreator {
           }
         })
       } else {
-        this.Logger.error(`Estimated profit is too low: ${estimatedProfit}, skipping.`)
+        this.Logger.error(`Estimated profit is too low: ${orderToCreate.estimatedProfit}, skipping.`)
       }
     })
   }

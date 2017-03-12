@@ -193,7 +193,7 @@ class Bitbay {
     const currency = 'BTC'
     const payment_currency = 'PLN'
     const type = 'buy'
-    const amount = parseFloat(order.buySize)// probably can remove parseFloat
+    const amount = order.buySize
     const rate = order.buyPrice
     const data = {
       method,
