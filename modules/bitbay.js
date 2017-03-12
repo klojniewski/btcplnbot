@@ -24,7 +24,6 @@ class Bitbay {
   }
   getOrders () {
     const method = 'orders'
-    const market = 'BTCPLN'
     const data = {
       method,
       limit: Env.TRADES_COUNT,
@@ -140,12 +139,12 @@ class Bitbay {
     const type = 'sell'
     const currency = 'BTC'
     const amount = order.sellSize
-    const payment_currency = 'PLN'
+    const payment_currency = 'PLN'// eslint-disable-line
     const rate = order.sellPrice
     const data = {
       method,
       currency,
-      payment_currency,
+      payment_currency,// eslint-disable-line
       type,
       amount,
       rate,
@@ -191,14 +190,14 @@ class Bitbay {
   createBTCBuyOrder (order) {
     const method = 'trade'
     const currency = 'BTC'
-    const payment_currency = 'PLN'
+    const payment_currency = 'PLN'// eslint-disable-line
     const type = 'buy'
     const amount = order.buySize
     const rate = order.buyPrice
     const data = {
       method,
       currency,
-      payment_currency,
+      payment_currency,// eslint-disable-line
       type,
       amount,
       rate,

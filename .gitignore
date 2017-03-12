@@ -31,3 +31,6 @@ config/*.js
 
 # Test PHP files
 *.php
+
+.jshintignore
+.jshintrc

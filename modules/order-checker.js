@@ -1,4 +1,3 @@
-const Env = require('../config/env.js')
 const Order = require('../models/order')
 
 class OrderChecker {
