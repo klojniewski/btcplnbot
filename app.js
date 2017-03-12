@@ -22,12 +22,12 @@ class App {
     this.Bitbay.getPLNBalance().then(PLN => {
       this.available = PLN - Env.MONEY_LEFT
       this.Calculator = new Calculator()
-      this.Creator = new OrderCreator(this.Calculator, Logger)
+      this.Creator = new OrderCreator(this.Calculator, Logger, this.Bitbay)
       this.start()
     })
   }
   start () {
-    this.tryToCreateBTCBuyOrders()
+    this.createBTCBuyOrders()
     setTimeout(() => {
       this.checkBTCBuyOrderStatus()
     }, 2 * 1000)
@@ -38,14 +38,14 @@ class App {
       this.checkBTCSellOrderStatus()
     }, 6 * 1000)
   }
-  tryToCreateBTCBuyOrders () {
+  createBTCBuyOrders () {
     Order.findActive().then(activeOrders => {
       if (activeOrders.length < Env.ACTIVE_ORDERS_LIMIT) {
         if (this.available > 1) {
           // check current price
           this.Bitbay.getBuyPrice().then(buyPrice => {
             // create orders
-            this.createBTCBuyOrders(buyPrice)
+            this.Creator.createBTCBuyOrders(buyPrice, this.available)
           })
         } else {
           const cash = Number(this.available).toFixed(2)
@@ -73,7 +73,7 @@ class App {
         const isBought = this.Bitbay.checkIfOrderIsBought(inActiveOrders, dbOrderId)
 
         if (isBought) {
-          Logger.success(`#${dbOrderId} has been bought! Changing order status.`)
+          Logger.success(`#${dbOrderId} has been bought! Changing Order status.`)
           dbOrder.saveUpdatedStatus(Env.STATUS_BOUGHT)
         } else if (isActive || isInActive) {
           const priceMargin = Number(dbOrder.buyPrice - buyPrice).toFixed(2)
@@ -84,7 +84,7 @@ class App {
       })
       if (lostOrders.length) {
         const lostOrdersIds = lostOrders.map(order => order.buyOrderId)
-        Logger.error(`Lost ${lostOrders.length} orders: ${lostOrdersIds}`)
+        Logger.error(`Lost ${lostOrders.length} Orders: ${lostOrdersIds}`)
       }
     })
   }
@@ -120,7 +120,7 @@ class App {
       })
       if (lostOrders.length) {
         const lostOrdersIds = lostOrders.map(order => order.buyOrderId)
-        Logger.error(`Lost ${lostOrders.length} orders: ${lostOrdersIds}`)
+        Logger.error(`Lost ${lostOrders.length} Orders: ${lostOrdersIds}`)
       }
     })
   }
@@ -129,46 +129,10 @@ class App {
       if (orders.length) {
         Logger.info(`Creating ${orders.length} BTC Sell Order(s)`)
         orders.forEach(order => {
-          this.createBTCSellOrder(order)
+          this.Creator.createBTCSellOrder(order)
         })
       } else {
         Logger.info(`No pending BTC Sell Orders to create.`)
-      }
-    })
-  }
-  createBTCSellOrder (order) {
-    Logger.info(`Creating BTC Sell Order #${order.buyOrderId}`)
-    this.Bitbay.createBTCSellOrder(order).then(response => {
-      if (response.order_id) {
-        order.sellOrderId = response.order_id
-        order.saveUpdatedStatus(Env.STATUS_TOBESOLD, error => {
-          if (error) {
-            Logger.error(`Failed to create BTC Sell order ${response.order_id} with errro ${error}`)
-          }
-        })
-      }
-    })
-  }
-  createBTCBuyOrders (currentPrice) {
-    currentPrice = Math.floor(currentPrice)
-    Logger.info(`Current BTC Price is: ${currentPrice} PLN, creating BTC Buy Orders.`)
-    const ordersToCreate = this.Creator.getOrders(currentPrice, this.available)
-    ordersToCreate.forEach(orderToCreate => {
-      if (orderToCreate.estimatedProfit > 0) {
-        this.Bitbay.createBTCBuyOrder(orderToCreate).then(resp => {
-          if (resp.order_id) {
-            this.available = this.available - orderToCreate.buyValue
-            orderToCreate.buyOrderId = resp.order_id
-            Logger.info(`BTC Buy Order Created ${orderToCreate.buyOrderId}, cash left: ${this.available}.`)
-            Order(orderToCreate).save(error => {
-              if (error) {
-                Logger.error(`Failed to create BTC Buy Order ${orderToCreate.buyOrderId} with error ${error}.`)
-              }
-            })
-          }
-        })
-      } else {
-        Logger.error(`Estimated profit is too low: ${estimatedProfit}, skipping.`)
       }
     })
   }
