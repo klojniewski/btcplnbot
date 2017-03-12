@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "ava",
     "lint": "standard"
   },
   "repository": {
@@ -17,9 +17,10 @@
   "bugs": {
     "url": "https://github.com/klojniewski/btcplnbot/issues"
   },
-  "pre-commit": ["lint"],
+  "pre-commit": ["test", "lint"],
   "homepage": "https://github.com/klojniewski/btcplnbot#readme",
   "devDependencies": {
+    "ava": "^0.18.2",
     "axios": "^0.15.3",
     "colors": "^1.1.2",
     "crypto-js": "^3.1.9-1",
