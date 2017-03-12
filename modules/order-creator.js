@@ -58,7 +58,7 @@ class OrderCreator {
   }
   createBTCBuyOrders (currentPrice, cashAvailable) {
     currentPrice = Math.floor(currentPrice)
-    this.Logger.info(`Current BTC Price is: ${currentPrice} PLN, creating BTC Buy Orders.`)
+    this.Logger.info(`Current BTC ASK Price is: ${currentPrice} PLN, creating BTC Buy Orders.`)
     const ordersToCreate = this.getOrders(currentPrice, cashAvailable)
     ordersToCreate.forEach(orderToCreate => {
       if (orderToCreate.estimatedProfit > 0) {
