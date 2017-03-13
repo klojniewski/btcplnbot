@@ -78,5 +78,27 @@ test('Commision rate is set', t => {
 })
 
 test('getOrders needs to return at least 1 order', t => {
-  t.is(Creator.getOrders(6000, 10000).length > 0, true)
+  const cash = 10000
+  const price = 6000
+  const orders = Creator.getOrders(price, cash)
+  let ordersValue = 0
+  t.is(orders.length > 0, true)
+
+  orders.map(order => {
+    ordersValue += parseFloat(order.buyValue)
+  })
+  t.true(cash.toFixed(3) === ordersValue.toFixed(3), true)
+})
+
+test('getOrders needs to return at least 1 order', t => {
+  const cash = 12345
+  const price = 1234
+  const orders = Creator.getOrders(price, cash)
+  let ordersValue = 0
+  t.is(orders.length > 0, true)
+
+  orders.map(order => {
+    ordersValue += parseFloat(order.buyValue)
+  })
+  t.true(cash.toFixed(3) === ordersValue.toFixed(3), true)
 })
