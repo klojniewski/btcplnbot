@@ -4,24 +4,15 @@ const Calculator = require('../modules/calculator')
 const Env = require('../config/env')
 
 const Calc = new Calculator()
-const Logger = {
-  info (message) {
-    return ''
-  },
-  error (message) {
-    return ''
-  },
-  success (message) {
-    return ''
-  },
-  extra (message) {
-    return ''
-  },
-  bold (message) {
-    return ''
-  }
+const LoggerMock = {
+  info (message) {},
+  error (message) {},
+  success (message) {},
+  extra (message) {},
+  bold (message) {}
 }
-const Creator = new OrderCreator(Calc, Logger, null)
+
+const Creator = new OrderCreator(Calc, LoggerMock, null)
 
 const buyPrice = 4000
 const buySize = 0.1
@@ -29,28 +20,61 @@ const commision = Env.COMMISION
 
 const Order = Creator.createOrder(buyPrice, buySize)
 
-test('Buy Price is set', t => {
+test('Buy Price is set and its a number', t => {
   t.is(Order.buyPrice, buyPrice)
+  t.true(Order.buyPrice > 0)
+  t.is(typeof Order.buyPrice, 'number')
 })
 
-test('Buy Size is set', t => {
+test('Buy Size is set and its a number', t => {
   t.is(Order.buySize, buySize)
+  t.true(Order.buySize > 0)
+  t.is(typeof Order.buySize, 'number')
 })
 
-test('BuyCommission test', t => {
+test('BuyCommission is set', t => {
+  t.is(Order.buyCommision, Number(buySize * commision / 100).toFixed(8))
+  t.true(Order.buyCommision > 0)
+})
+
+test('BuyValue is set', t => {
+  t.true(parseFloat(Order.buyValue) > 0)
+  t.is(typeof parseFloat(Order.buyValue), 'number')
+})
+
+test('Sell Price is set and its a number', t => {
+  t.true(Order.sellPrice > 0)
+  t.is(typeof Order.sellPrice, 'number')
+})
+
+test('Sell Size is set and its a number', t => {
+  t.true(Order.sellSize > 0)
+  t.is(typeof Order.sellSize, 'number')
+})
+
+test('SellCommission is set', t => {
+  t.true(Order.sellCommision > 0)
   t.is(Order.buyCommision, Number(buySize * commision / 100).toFixed(8))
 })
 
-test('Sell Commision test', t => {
-  t.is(Order.sellCommision > 0.0001, true)
+test('SellValue is set', t => {
+  t.true(parseFloat(Order.sellValue) > 0)
+  t.is(typeof parseFloat(Order.sellValue), 'number')
 })
 
-test('Buy Size needs to be bigger than sell Size', t => {
-  t.true(Order.buySize > Order.sellSize)
+test('Estimated profit is set', t => {
+  t.true(Order.estimatedProfit > 0)
+  t.is(typeof Order.estimatedProfit, 'number')
 })
 
-test('Estimated profit needs to be bigger than 0.001 PLN', t => {
-  t.is(Order.estimatedProfit > 0.001, true)
+test('Status is set', t => {
+  t.true(Order.status > 0)
+  t.is(typeof Order.status, 'number')
+})
+
+test('Commision rate is set', t => {
+  t.true(Order.commisionRate > 0)
+  t.is(typeof Order.commisionRate, 'number')
 })
 
 test('getOrders needs to return at least 1 order', t => {

@@ -1,6 +1,5 @@
 const Env = require('../config/env.js')
 const uuidV1 = require('uuid/v1')
-const Order = require('../models/order')
 
 class OrderCreator {
   constructor (Calculator, Logger, Bitbay) {
@@ -53,44 +52,8 @@ class OrderCreator {
       dateCreated: new Date(),
       dateFinished: null,
       status: Env.STATUS_NEW,
-      commisionRate: Env.COMMISION
+      commisionRate: Number(Env.COMMISION)
     }
-  }
-  createBTCBuyOrders (currentPrice, cashAvailable) {
-    currentPrice = Math.floor(currentPrice)
-    this.Logger.info(`Current BTC ASK Price is: ${currentPrice} PLN, creating BTC Buy Orders.`)
-    const ordersToCreate = this.getOrders(currentPrice, cashAvailable)
-    ordersToCreate.forEach(orderToCreate => {
-      if (orderToCreate.estimatedProfit > 0) {
-        this.Bitbay.createBTCBuyOrder(orderToCreate).then(resp => {
-          if (resp.order_id) {
-            cashAvailable = cashAvailable - orderToCreate.buyValue
-            orderToCreate.buyOrderId = resp.order_id
-            this.Logger.info(`BTC Buy Order Created ${orderToCreate.buyOrderId}, cash left: ${cashAvailable}.`)
-            Order(orderToCreate).save(error => {
-              if (error) {
-                this.Logger.error(`Failed to create BTC Buy Order ${orderToCreate.buyOrderId} with error ${error}.`)
-              }
-            })
-          }
-        })
-      } else {
-        this.Logger.error(`Estimated profit is too low: ${orderToCreate.estimatedProfit}, skipping.`)
-      }
-    })
-  }
-  createBTCSellOrder (order) {
-    this.Logger.info(`Creating BTC Sell Order #${order.buyOrderId}`)
-    this.Bitbay.createBTCSellOrder(order).then(response => {
-      if (response.order_id) {
-        order.sellOrderId = response.order_id
-        order.saveUpdatedStatus(Env.STATUS_TOBESOLD, error => {
-          if (error) {
-            this.Logger.error(`Failed to create BTC Sell order ${response.order_id} with errro ${error}`)
-          }
-        })
-      }
-    })
   }
 }
 

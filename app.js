@@ -50,7 +50,25 @@ class App {
           // check current price
           this.Bitbay.getBuyPrice().then(buyPrice => {
             // create orders
-            this.Creator.createBTCBuyOrders(buyPrice, this.available)
+            const ordersToBuy = this.Creator.getOrders(buyPrice, this.available)
+            ordersToBuy.forEach(orderToCreate => {
+              if (orderToCreate.estimatedProfit > 0) {
+                this.Bitbay.createBTCBuyOrder(orderToCreate).then(resp => {
+                  if (resp.order_id) {
+                    this.available = this.available - orderToCreate.buyValue
+                    orderToCreate.buyOrderId = resp.order_id
+                    Logger.info(`BTC Buy Order Created ${orderToCreate.buyOrderId}, cash left: ${this.available}.`)
+                    Order(orderToCreate).save(error => {
+                      if (error) {
+                        Logger.error(`Failed to create BTC Buy Order ${orderToCreate.buyOrderId} with error ${error}.`)
+                      }
+                    })
+                  }
+                })
+              } else {
+                Logger.error(`Estimated profit is too low: ${orderToCreate.estimatedProfit}, skipping.`)
+              }
+            })
           })
         } else {
           const cash = Number(this.available).toFixed(2)
@@ -134,7 +152,17 @@ class App {
       if (orders.length) {
         Logger.info(`Creating ${orders.length} BTC Sell Order(s)`)
         orders.forEach(order => {
-          this.Creator.createBTCSellOrder(order)
+          Logger.info(`Creating BTC Sell Order #${order.buyOrderId}`)
+          this.Bitbay.createBTCSellOrder(order).then(response => {
+            if (response.order_id) {
+              order.sellOrderId = response.order_id
+              order.saveUpdatedStatus(Env.STATUS_TOBESOLD, error => {
+                if (error) {
+                  Logger.error(`Failed to create BTC Sell order ${response.order_id} with errro ${error}`)
+                }
+              })
+            }
+          })
         })
       } else {
         Logger.info(`No pending BTC Sell Orders to create.`)
