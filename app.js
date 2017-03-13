@@ -6,6 +6,7 @@ const Calculator = require('./modules/calculator')
 const Order = require('./models/order')
 const OrderCreator = require('./modules/order-creator')
 const OrderChecker = require('./modules/order-checker')
+const colors = require('colors')// eslint-disable-line
 const Logger = new Log()
 
 class App {
@@ -17,13 +18,9 @@ class App {
     Logger.bold('Bot instance created.')
   }
   init () {
-    Logger.info('Bot Init, getting account informations.')
-    this.Bitbay.getPLNBalance().then(PLN => {
-      this.available = PLN - Env.MONEY_LEFT
-      this.Calculator = new Calculator()
-      this.Creator = new OrderCreator(this.Calculator, Logger, this.Bitbay)
-      this.earnMoney()
-    })
+    this.Calculator = new Calculator()
+    this.Creator = new OrderCreator(this.Calculator, Logger, this.Bitbay)
+    this.earnMoney()
   }
   earnMoney () {
     this.createBTCBuyOrders()
@@ -44,27 +41,37 @@ class App {
     }
   }
   createBTCBuyOrders () {
-    Order.findActive().then(activeOrders => {
+    Logger.info('Bot Init, getting account informations.')
+
+    Promise.all([
+      this.Bitbay.getPLNBalance(),
+      Order.findActive()
+    ]).then(values => {
+      const [ PLN, activeOrders ] = values
+      this.available = PLN - Env.MONEY_LEFT
       if (activeOrders.length < Env.ACTIVE_ORDERS_LIMIT) {
         if (this.available > 1) {
           // check current price
           this.Bitbay.getBuyPrice().then(buyPrice => {
             // create orders
+            let orderCount = 0
             const ordersToBuy = this.Creator.getOrders(buyPrice, this.available)
             ordersToBuy.forEach(orderToCreate => {
               if (orderToCreate.estimatedProfit > 0) {
-                this.Bitbay.createBTCBuyOrder(orderToCreate).then(resp => {
-                  if (resp.order_id) {
-                    this.available = this.available - orderToCreate.buyValue
-                    orderToCreate.buyOrderId = resp.order_id
-                    Logger.info(`BTC Buy Order Created ${orderToCreate.buyOrderId}, cash left: ${this.available}.`)
-                    Order(orderToCreate).save(error => {
-                      if (error) {
-                        Logger.error(`Failed to create BTC Buy Order ${orderToCreate.buyOrderId} with error ${error}.`)
-                      }
-                    })
-                  }
-                })
+                setTimeout(() => {
+                  this.Bitbay.createBTCBuyOrder(orderToCreate).then(resp => {
+                    if (resp.order_id) {
+                      this.available = this.available - orderToCreate.buyValue
+                      orderToCreate.buyOrderId = resp.order_id
+                      Logger.info(`BTC Buy Order Created ${orderToCreate.buyOrderId}, cash left: ${this.available}.`)
+                      Order(orderToCreate).save(error => {
+                        if (error) {
+                          Logger.error(`Failed to create BTC Buy Order ${orderToCreate.buyOrderId} with error ${error}.`)
+                        }
+                      })
+                    }
+                  })
+                }, orderCount++ * 1500)
               } else {
                 Logger.error(`Estimated profit is too low: ${orderToCreate.estimatedProfit}, skipping.`)
               }
