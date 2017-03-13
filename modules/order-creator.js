@@ -26,7 +26,7 @@ class OrderCreator {
     const id = uuidV1()
 
     const buyOrderId = 0
-    const buyCommision = Number(this.Calculator.getBayCommision(buySize)).toFixed(8)
+    const buyCommision = Number(this.Calculator.getBuyCommision(buySize)).toFixed(8)
     const buyValue = Number(buySize * buyPrice).toFixed(8)
 
     const sellOrderId = 0

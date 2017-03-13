@@ -7,7 +7,7 @@ class Calculator {
   getSellPrice (buyPrice) {
     return buyPrice + Env.SELL_PRICE_MARGIN
   }
-  getBayCommision (btcSize) {
+  getBuyCommision (btcSize) {
     return btcSize * this.commissionMaker / 100
   }
   getSellCommision (plnValue) {
