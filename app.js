@@ -42,7 +42,6 @@ class App {
   }
   createBTCBuyOrders () {
     Logger.info('Bot Init, getting account informations.')
-
     Promise.all([
       this.Bitbay.getPLNBalance(),
       Order.findActive()
@@ -159,17 +158,21 @@ class App {
       if (orders.length) {
         Logger.info(`Creating ${orders.length} BTC Sell Order(s)`)
         orders.forEach(order => {
-          Logger.info(`Creating BTC Sell Order #${order.buyOrderId}`)
-          this.Bitbay.createBTCSellOrder(order).then(response => {
-            if (response.order_id) {
-              order.sellOrderId = response.order_id
-              order.saveUpdatedStatus(Env.STATUS_TOBESOLD, error => {
-                if (error) {
-                  Logger.error(`Failed to create BTC Sell order ${response.order_id} with errro ${error}`)
-                }
-              })
-            }
-          })
+          let orderCount = 0
+          setTimeout(() => {
+            Logger.info(`Creating BTC Sell Order #${order.buyOrderId}`)
+            this.Bitbay.createBTCSellOrder(order).then(response => {
+              console.log('response:', response)
+              if (response.order_id) {
+                order.sellOrderId = response.order_id
+                order.saveUpdatedStatus(Env.STATUS_TOBESOLD, error => {
+                  if (error) {
+                    Logger.error(`Failed to create BTC Sell order ${response.order_id} with errro ${error}`)
+                  }
+                })
+              }
+            })
+          }, orderCount++ * 1500)
         })
       } else {
         Logger.info(`No pending BTC Sell Orders to create.`)

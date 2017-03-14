@@ -157,10 +157,12 @@ class Bitbay {
       headers: this.getApiHeaders(postQueryString)
     }).then(response => {
       if (!response.data || !response.data.success) {
-        const error = `Error when creating order ${response.error}, ${response.errorMsg}`
+        const error = `Error when creating order, Error code: ${response.error || response.data.code}, ${response.errorMsg || response.data.message}`
+        console.log('Data:', data)
         return Promise.reject(error)
+      } else {
+        return response.data
       }
-      return response.data
     }).catch(error => {
       this.Logger.error(error)
     })
