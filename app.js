@@ -54,7 +54,7 @@ class App {
           this.Bitbay.getBuyPrice().then(buyPrice => {
             // create orders
             let orderCount = 0
-            const { buyOrdersToCreate, messages } = this.Creator.getOrdersToCreate(buyPrice, this.available)
+            const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreate(buyPrice, this.available)
             Logger.printMessages(messages)
             buyOrdersToCreate.forEach(orderToCreate => {
               if (orderToCreate.estimatedProfit > 0) {
@@ -71,7 +71,7 @@ class App {
                       })
                     }
                   })
-                }, orderCount++ * 1500)
+                }, orderCount++ * Env.API_TIMEOUT)
               } else {
                 Logger.error(`Estimated profit is too low: ${orderToCreate.estimatedProfit}, skipping.`)
               }
@@ -179,7 +179,7 @@ class App {
                 })
               }
             })
-          }, orderCount++ * 1500)
+          }, orderCount++ * Env.API_TIMEOUT)
         })
       } else {
         Logger.info(`No pending BTC Sell Orders to create.`)

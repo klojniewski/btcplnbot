@@ -31,6 +31,23 @@ class Bitbay {
       this.Logger.error(`Error when fetching account info ${error}`)
     })
   }
+  cancelOrder (orderId) {
+    const method = 'cancel'
+    const data = {
+      method,
+      id: orderId,
+      moment: this.getTimestamp()
+    }
+    const postQueryString = queryString.stringify(data)
+
+    return axios.post(Env.API_URL, postQueryString, {
+      headers: this.getApiHeaders(postQueryString)
+    }).then(function (response) {
+      return response.data
+    }).catch(error => {
+      this.Logger.error(`Error when canceling the order ${error}`)
+    })
+  }
   getTransactions () {
     const method = 'transactions'
     const market = 'BTC-PLN'

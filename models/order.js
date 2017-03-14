@@ -28,6 +28,10 @@ orderSchema.statics.findActive = function (callback) {
   return this.find({ status: {$ne: Env.STATUS_SOLD} }, callback)
 }
 
+orderSchema.statics.findNew = function (callback) {
+  return this.find({ status: {$ne: Env.STATUS_NEW} }, callback)
+}
+
 orderSchema.methods.saveUpdatedStatus = function (statusId, callback) {
   this.status = statusId
   if (statusId === Env.STATUS_SOLD) {
