@@ -25,20 +25,23 @@ class App {
   earnMoney () {
     this.createBTCBuyOrders()
     setTimeout(() => {
-      this.checkBTCBuyOrderStatus()
-    }, 4 * 1000)
+      this.checkOrderStatuses()
+    }, 20 * 1000)
     setTimeout(() => {
       this.createBTCSellOrders()
-    }, 6 * 1000)
-    setTimeout(() => {
-      this.checkBTCSellOrderStatus()
-    }, 8 * 1000)
+    }, 30 * 1000)
     if (Env.IN_LOOP) {
       setTimeout(() => {
         Logger.bold('Another round.')
         this.earnMoney()
       }, 60 * 1000)
     }
+  }
+  checkOrderStatuses () {
+    this.checkBTCBuyOrderStatus()
+    setTimeout(() => {
+      this.checkBTCSellOrderStatus()
+    }, 5 * 1000)
   }
   createBTCBuyOrders () {
     Logger.info('Bot Init, getting account informations.')

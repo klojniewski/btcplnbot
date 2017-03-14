@@ -7,6 +7,7 @@
     "start": "node app.js",
     "test": "ava",
     "lint": "standard",
+    "delete-new": "node delete-new-orders.js",
     "validate": "npm ls"
   },
   "repository": {
