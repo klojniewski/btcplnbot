@@ -92,13 +92,14 @@ test('getOrders needs to return orders with buyValue', t => {
   const price = 1234
   const ordersToCreate = Creator.getOrdersToCreate(price, cash)
   const { orders, messages } = ordersToCreate
-  let ordersValue = 0
+
   t.is(orders.length > 0, true)
   t.is(messages.length > 0, true)
 
-  orders.map(order => {
-    ordersValue += parseFloat(order.buyValue)
-  })
+  const ordersValue = orders.reduce((sum, order) => {
+    let newSum = sum += parseFloat(order.buyValue)
+    return newSum
+  }, 0)
   t.true(cash.toFixed(3) === ordersValue.toFixed(3), true)
 })
 
