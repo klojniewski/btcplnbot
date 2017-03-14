@@ -1,25 +1,33 @@
 const Env = require('../config/env.js')
 const uuidV1 = require('uuid/v1')
+const Calculator = require('./calculator')
 
 class OrderCreator {
-  constructor (Calculator, Logger, Bitbay) {
-    this.Calculator = Calculator
-    this.Logger = Logger
-    this.Bitbay = Bitbay
+  constructor () {
+    this.Calculator = new Calculator()
   }
-  getOrders (currentPrice, available) {
+  getOrdersToCreate (currentPrice, available) {
     let startPrice = currentPrice - Env.START_PRICE_MARGIN
     let orders = []
-    const amountPerOrder = available / Env.ORDER_COUNT
-    this.Logger.info(`Have ${available} PLN to invest.`)
-    this.Logger.info(`Will create ${Env.ORDER_COUNT} BTC Buy Order(s) ${amountPerOrder} PLN each.`)
-    this.Logger.info(`BTC Buy Orders will start from ${startPrice} PLN`)
-    for (let i = 0; i < Env.ORDER_COUNT; i++) {
+    const orderCount = Env.ORDER_COUNT
+    const amountPerOrder = available / orderCount
+    const messages = this.getMessages(available, orderCount, amountPerOrder, startPrice)
+    for (let i = 0; i < orderCount; i++) {
       const buyPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
       const buySize = Number(amountPerOrder / buyPrice).toFixed(8)
       orders.push(this.createOrder(buyPrice, buySize))
     }
-    return orders
+    return {
+      orders,
+      messages
+    }
+  }
+  getMessages (available, count, amountPerOrder, startPrice) {
+    let messages = []
+    messages.push(`Have ${available} PLN to invest.`)
+    messages.push(`Will create ${count} BTC Buy Order(s) ${amountPerOrder} PLN each.`)
+    messages.push(`BTC Buy Orders will start from ${startPrice} PLN`)
+    return messages
   }
   createOrder (buyPrice, buySize) {
     const id = uuidV1()

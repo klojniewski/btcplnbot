@@ -4,10 +4,7 @@ const queryString = require('query-string')
 const CryptoJS = require('crypto-js')
 
 class Bitbay {
-  constructor (Logger) {
-    this.Logger = Logger
-  }
-  time () {
+  getTimestamp () {
     return Math.floor(new Date().getTime() / 1000)
   }
   getApiHeaders (postQueryString) {
@@ -17,17 +14,12 @@ class Bitbay {
       'API-Hash': signagure.toString()
     }
   }
-  getTrade (tradeId, tradesCollection) {
-    return tradesCollection.filter(trade => {
-      return trade.id === tradeId
-    })[0]
-  }
   getOrders () {
     const method = 'orders'
     const data = {
       method,
       limit: Env.TRADES_COUNT,
-      moment: this.time()
+      moment: this.getTimestamp()
     }
     const postQueryString = queryString.stringify(data)
 
@@ -45,7 +37,7 @@ class Bitbay {
     const data = {
       method,
       market,
-      moment: this.time()
+      moment: this.getTimestamp()
     }
     const postQueryString = queryString.stringify(data)
 
@@ -64,7 +56,7 @@ class Bitbay {
       method,
       currency,
       limit: 20,
-      moment: this.time()
+      moment: this.getTimestamp()
     }
     const postQueryString = queryString.stringify(data)
 
@@ -82,7 +74,7 @@ class Bitbay {
     const data = {
       method,
       count: Env.TRADES_COUNT,
-      moment: this.time(),
+      moment: this.getTimestamp(),
       market
     }
     const postQueryString = queryString.stringify(data)
@@ -100,7 +92,7 @@ class Bitbay {
     const data = {
       method,
       currency: 'PLN',
-      moment: this.time()
+      moment: this.getTimestamp()
     }
     const postQueryString = queryString.stringify(data)
 
@@ -148,7 +140,7 @@ class Bitbay {
       type,
       amount,
       rate,
-      moment: this.time()
+      moment: this.getTimestamp()
     }
 
     const postQueryString = queryString.stringify(data)
@@ -176,19 +168,6 @@ class Bitbay {
   filterOrders (orders, status) {
     return orders.filter(order => order.status === status)
   }
-  checkIfOrderIsBought (inActiveOrders, orderId) {
-    const boughtOrder = inActiveOrders.filter(inActiveOrder => {
-      return orderId === inActiveOrder.order_id &&
-        inActiveOrder.units === '0.00000000'
-    })
-    return boughtOrder.length === 1
-  }
-  checkIfOrderIsActive (activeOrders, orderId) {
-    return activeOrders.find(order => parseInt(order.order_id) === orderId)
-  }
-  checkIfOrderIsInActive (inActiveOrders, orderId) {
-    return inActiveOrders.find(order => parseInt(order.order_id) === orderId)
-  }
   createBTCBuyOrder (order) {
     const method = 'trade'
     const currency = 'BTC'
@@ -203,7 +182,7 @@ class Bitbay {
       type,
       amount,
       rate,
-      moment: this.time()
+      moment: this.getTimestamp()
     }
 
     const postQueryString = queryString.stringify(data)

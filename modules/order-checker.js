@@ -1,27 +1,37 @@
 const Order = require('../models/order')
+const Bitbay = require('../modules/bitbay')
 
 class OrderChecker {
-  constructor (Bitbay) {
-    this.Bitbay = Bitbay
+  constructor () {
+    this.Bitbay = new Bitbay()
   }
   getOrders (statusId) {
     return Promise.all([
       this.Bitbay.getOrders(),
-      Order.findByStatusId(statusId),
-      this.Bitbay.getBuyPrice()
+      Order.findByStatusId(statusId)
     ]).then(values => {
-      const [ marketOrders, databaseOrders, buyPrice ] = values
+      const [ marketOrders, databaseOrders ] = values
       const activeOrders = this.Bitbay.filterActiveOrders(marketOrders)
       const inActiveOrders = this.Bitbay.filterInActiveOrders(marketOrders)
       return {
-        orders: {
-          activeOrders,
-          inActiveOrders,
-          databaseOrders
-        },
-        buyPrice
+        activeOrders,
+        inActiveOrders,
+        databaseOrders
       }
     })
+  }
+  checkIfOrderIsBought (inActiveOrders, orderId) {
+    const boughtOrder = inActiveOrders.filter(inActiveOrder => {
+      return orderId === inActiveOrder.order_id &&
+        inActiveOrder.units === '0.00000000'
+    })
+    return boughtOrder.length === 1
+  }
+  checkIfOrderIsActive (activeOrders, orderId) {
+    return !!activeOrders.find(order => order.order_id === orderId)
+  }
+  checkIfOrderIsInActive (inActiveOrders, orderId) {
+    return !!inActiveOrders.find(order => order.order_id === orderId)
   }
 }
 

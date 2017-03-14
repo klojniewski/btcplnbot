@@ -1,18 +1,8 @@
 const test = require('ava')
 const OrderCreator = require('../modules/order-creator')
-const Calculator = require('../modules/calculator')
 const Env = require('../config/env')
 
-const Calc = new Calculator()
-const LoggerMock = {
-  info (message) {},
-  error (message) {},
-  success (message) {},
-  extra (message) {},
-  bold (message) {}
-}
-
-const Creator = new OrderCreator(Calc, LoggerMock, null)
+const Creator = new OrderCreator()
 
 const buyPrice = 4000
 const buySize = 0.1
@@ -80,10 +70,14 @@ test('Commision rate is set', t => {
 test('getOrders needs to return at least 1 order', t => {
   const cash = 196000.43
   const price = 5071
-  const orders = Creator.getOrders(price, cash)
+
+  const ordersToCreate = Creator.getOrdersToCreate(price, cash)
+  const { orders, messages } = ordersToCreate
   let ordersValue = 0
   let ordersProfit = 0
+
   t.is(orders.length > 0, true)
+  t.is(messages.length > 0, true)
 
   orders.map(order => {
     ordersValue += parseFloat(order.buyValue)
@@ -93,15 +87,27 @@ test('getOrders needs to return at least 1 order', t => {
   t.true(ordersProfit > 0, true)
 })
 
-test('getOrders needs to return at least 1 order', t => {
+test('getOrders needs to return orders with buyValue', t => {
   const cash = 12345
   const price = 1234
-  const orders = Creator.getOrders(price, cash)
+  const ordersToCreate = Creator.getOrdersToCreate(price, cash)
+  const { orders, messages } = ordersToCreate
   let ordersValue = 0
   t.is(orders.length > 0, true)
+  t.is(messages.length > 0, true)
 
   orders.map(order => {
     ordersValue += parseFloat(order.buyValue)
   })
   t.true(cash.toFixed(3) === ordersValue.toFixed(3), true)
+})
+
+test('getMessages needs to return an array', t => {
+  const available = 10000
+  const count = 20
+  const amountPerOrder = 3000
+  const startPrice = 8000
+  const messages = Creator.getMessages(available, count, amountPerOrder, startPrice)
+
+  t.true(messages instanceof Array, true)
 })

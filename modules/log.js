@@ -20,5 +20,10 @@ class Log {
   bold (message) {
     Winston.info('info', message.red.bold)
   }
+  printMessages (messages) {
+    messages.forEach(message => {
+      this.info(message)
+    })
+  }
 }
 module.exports = Log
