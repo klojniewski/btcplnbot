@@ -4,6 +4,9 @@ const queryString = require('query-string')
 const CryptoJS = require('crypto-js')
 
 class Bitbay {
+  getBase (method) {
+    return { method, moment: this.getTimestamp() }
+  }
   getTimestamp () {
     return Math.floor(new Date().getTime() / 1000)
   }
@@ -15,12 +18,9 @@ class Bitbay {
     }
   }
   getOrders () {
-    const method = 'orders'
-    const data = {
-      method,
-      limit: Env.TRADES_COUNT,
-      moment: this.getTimestamp()
-    }
+    const data = Object.assign({}, this.getBase('orders'), {
+      limit: Env.TRADES_COUNT
+    })
     const postQueryString = queryString.stringify(data)
 
     return axios.post(Env.API_URL, postQueryString, {
@@ -32,12 +32,9 @@ class Bitbay {
     })
   }
   cancelOrder (orderId) {
-    const method = 'cancel'
-    const data = {
-      method,
-      id: orderId,
-      moment: this.getTimestamp()
-    }
+    const data = Object.assign({}, this.getBase('cancel'), {
+      id: orderId
+    })
     const postQueryString = queryString.stringify(data)
 
     return axios.post(Env.API_URL, postQueryString, {
@@ -49,13 +46,10 @@ class Bitbay {
     })
   }
   getTransactions () {
-    const method = 'transactions'
     const market = 'BTC-PLN'
-    const data = {
-      method,
-      market,
-      moment: this.getTimestamp()
-    }
+    const data = Object.assign({}, this.getBase('transactions'), {
+      market
+    })
     const postQueryString = queryString.stringify(data)
 
     return axios.post(Env.API_URL, postQueryString, {
@@ -67,14 +61,11 @@ class Bitbay {
     })
   }
   getHistory () {
-    const method = 'history'
     const currency = 'BTC'
-    const data = {
-      method,
+    const data = Object.assign({}, this.getBase('history'), {
       currency,
-      limit: 20,
-      moment: this.getTimestamp()
-    }
+      limit: 20
+    })
     const postQueryString = queryString.stringify(data)
 
     return axios.post(Env.API_URL, postQueryString, {
@@ -86,14 +77,11 @@ class Bitbay {
     })
   }
   getTrades () {
-    const method = 'trades'
     const market = 'BTCPLN'
-    const data = {
-      method,
+    const data = Object.assign({}, this.getBase('trades'), {
       count: Env.TRADES_COUNT,
-      moment: this.getTimestamp(),
       market
-    }
+    })
     const postQueryString = queryString.stringify(data)
 
     return axios.post(Env.API_URL, postQueryString, {
@@ -105,12 +93,10 @@ class Bitbay {
     })
   }
   getPLNBalance () {
-    const method = 'info'
-    const data = {
-      method,
-      currency: 'PLN',
-      moment: this.getTimestamp()
-    }
+    const currency = 'PLN'
+    const data = Object.assign({}, this.getBase('info'), {
+      currency
+    })
     const postQueryString = queryString.stringify(data)
 
     return axios.post(Env.API_URL, postQueryString, {
@@ -144,21 +130,18 @@ class Bitbay {
       })
   }
   createBTCSellOrder (order) {
-    const method = 'trade'
     const type = 'sell'
     const currency = 'BTC'
     const amount = order.sellSize
     const payment_currency = 'PLN'// eslint-disable-line
     const rate = order.sellPrice
-    const data = {
-      method,
+    const data = Object.assign({}, this.getBase('trade'), {
       currency,
       payment_currency,// eslint-disable-line
       type,
       amount,
-      rate,
-      moment: this.getTimestamp()
-    }
+      rate
+    })
 
     const postQueryString = queryString.stringify(data)
 
@@ -186,21 +169,19 @@ class Bitbay {
     return orders.filter(order => order.status === status)
   }
   createBTCBuyOrder (order) {
-    const method = 'trade'
     const currency = 'BTC'
     const payment_currency = 'PLN'// eslint-disable-line
     const type = 'buy'
     const amount = order.buySize
     const rate = order.buyPrice
-    const data = {
-      method,
+
+    const data = Object.assign({}, this.getBase('trade'), {
       currency,
       payment_currency,// eslint-disable-line
       type,
       amount,
-      rate,
-      moment: this.getTimestamp()
-    }
+      rate
+    })
 
     const postQueryString = queryString.stringify(data)
 
