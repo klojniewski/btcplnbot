@@ -7,8 +7,8 @@ class OrderCreator {
     this.Calculator = new Calculator()
   }
   getOrdersToCreate (currentPrice, available) {
-    let startPrice = currentPrice - Env.START_PRICE_MARGIN
-    let orders = []
+    const startPrice = currentPrice - Env.START_PRICE_MARGIN
+    const orders = []
     const orderCount = Env.ORDER_COUNT
     const amountPerOrder = available / orderCount
     const messages = this.getMessages(available, orderCount, amountPerOrder, startPrice)
@@ -23,7 +23,7 @@ class OrderCreator {
     }
   }
   getMessages (available, count, amountPerOrder, startPrice) {
-    let messages = []
+    const messages = []
     messages.push(`Have ${available} PLN to invest.`)
     messages.push(`Will create ${count} BTC Buy Order(s) ${amountPerOrder} PLN each.`)
     messages.push(`BTC Buy Orders will start from ${startPrice} PLN`)
