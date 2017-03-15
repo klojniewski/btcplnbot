@@ -168,10 +168,9 @@ class App {
     Order.findByStatusId(Env.STATUS_BOUGHT).then(orders => {
       if (orders.length) {
         Logger.info(`Creating ${orders.length} BTC Sell Order(s)`)
-        orders.forEach(order => {
-          let orderCount = 1
+        orders.forEach((order, iterationNo) => {
           setTimeout(() => {
-            Logger.info(`${orderCount} / ${orders.length} Created BTC Sell Order #${order.buyOrderId}`)
+            Logger.info(`${iterationNo + 1} / ${orders.length} Created BTC Sell Order #${order.buyOrderId}`)
             this.Bitbay.createBTCSellOrder(order).then(response => {
               if (response.order_id) {
                 order.sellOrderId = response.order_id
@@ -182,7 +181,7 @@ class App {
                 })
               }
             })
-          }, orderCount++ * Env.API_TIMEOUT)
+          }, iterationNo * Env.API_TIMEOUT)
         })
       } else {
         Logger.info(`No pending BTC Sell Orders to create.`)
