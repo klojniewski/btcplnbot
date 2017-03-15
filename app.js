@@ -58,7 +58,7 @@ class App {
             // create orders
             let orderCount = 1
             const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreate(buyPrice, this.available)
-            Logger.printMessages(messages)
+            Logger.printMessages(messages, 'buy')
             buyOrdersToCreate.forEach(orderToCreate => {
               if (orderToCreate.estimatedProfit > 0) {
                 setTimeout(() => {
@@ -66,7 +66,7 @@ class App {
                     if (resp.order_id) {
                       this.available = this.available - orderToCreate.buyValue
                       orderToCreate.buyOrderId = resp.order_id
-                      Logger.info(`${orderCount} / ${buyOrdersToCreate.length} BTC Buy Order Created ${orderToCreate.buyOrderId}, cash left: ${this.available}.`)
+                      Logger.buy(`${orderCount} / ${buyOrdersToCreate.length} BTC Buy Order Created ${orderToCreate.buyOrderId}, cash left: ${this.available}.`)
                       Order(orderToCreate).save(error => {
                         if (error) {
                           Logger.error(`Failed to create BTC Buy Order ${orderToCreate.buyOrderId} with error ${error}.`)
@@ -82,7 +82,7 @@ class App {
           })
         } else {
           const cash = Number(this.available).toFixed(2)
-          Logger.info(`Not enough cash to create BTC Buy Orders, current cash: ${cash} PLN.`)
+          Logger.buy(`Not enough cash to create BTC Buy Orders, current cash: ${cash} PLN.`)
         }
       }
     })
@@ -126,19 +126,19 @@ class App {
     })
   }
   checkBTCSellOrderStatus () {
-    Logger.info(`Check if BTC Sell Order(s) have been sold.`)
+    Logger.sell(`Check if BTC Sell Order(s) have been sold.`)
 
     Promise.all([
       this.Checker.getOrders(Env.STATUS_TOBESOLD),
-      this.Bitbay.getBuyPrice()
+      this.Bitbay.getSellPrice()
     ]).then(values => {
       const { activeOrders, inActiveOrders, databaseOrders } = values[0]
-      const buyPrice = values[1]
+      const sellPrice = values[1]
       let lostOrders = []
       if (databaseOrders.length) {
-        Logger.info(`Found ${databaseOrders.length} BTC Sell Order(s) to check.`)
+        Logger.sell(`Found ${databaseOrders.length} BTC Sell Order(s) to check.`)
       } else {
-        Logger.info(`No pending BTC Sell Orders to check.`)
+        Logger.sell(`No pending BTC Sell Orders to check.`)
         return
       }
       databaseOrders.forEach(dbOrder => {
@@ -152,8 +152,8 @@ class App {
           Logger.success(`#${dbOrderId} has been sold! Profit: ${profit} PLN. Changing Order status.`)
           dbOrder.saveUpdatedStatus(Env.STATUS_SOLD)
         } else if (isActive || isInActive) {
-          const priceMargin = Number(dbOrder.buyPrice - buyPrice).toFixed(2)
-          Logger.info(`#${dbOrderId} is waiting, ${dbOrder.sellPrice} vs ${buyPrice} (${priceMargin} PLN)`)
+          const priceMargin = Number(dbOrder.sellPrice - sellPrice).toFixed(2)
+          Logger.sell(`#${dbOrderId} is waiting, ${dbOrder.sellPrice} vs ${sellPrice} (${priceMargin} PLN)`)
         } else {
           lostOrders.push(dbOrder)
         }

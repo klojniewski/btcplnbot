@@ -20,10 +20,20 @@ class Log {
   bold (message) {
     Winston.info('info', message.red.bold)
   }
-  printMessages (messages) {
+  printMessages (messages, type = 'info') {
     messages.forEach(message => {
-      this.info(message)
+      if (type === 'buy') {
+        this.buy(message)
+      } else {
+        this.info(message)
+      }
     })
+  }
+  buy (message) {
+    Winston.info('info', message.magenta)
+  }
+  sell (message) {
+    Winston.info('info', message.cyan)
   }
 }
 module.exports = Log
