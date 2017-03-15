@@ -28,10 +28,10 @@ class OrderChecker {
     return boughtOrder.length === 1
   }
   checkIfOrderIsActive (activeOrders, orderId) {
-    return !!activeOrders.find(order => order.order_id === orderId)
+    return activeOrders.some(order => order.order_id === orderId)
   }
   checkIfOrderIsInActive (inActiveOrders, orderId) {
-    return !!inActiveOrders.find(order => order.order_id === orderId)
+    return inActiveOrders.some(order => order.order_id === orderId)
   }
 }
 
