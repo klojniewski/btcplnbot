@@ -52,21 +52,21 @@ class App {
       const [ PLN, activeOrders ] = values
       this.available = PLN - Env.MONEY_LEFT
       if (activeOrders.length < Env.ACTIVE_ORDERS_LIMIT) {
-        if (this.available > 1) {
+        if (this.available > Env.MINIMUM_ORDER_VALUE) {
           // check current price
           this.Bitbay.getBuyPrice().then(buyPrice => {
             // create orders
-            let orderCount = 1
-            const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreate(buyPrice, this.available)
+            const { amountPerOrder, orderCount } = this.Creator.getAmountPerOrder(this.available, Env.ORDER_COUNT)
+            const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreate(buyPrice, this.available, amountPerOrder, orderCount)
             Logger.printMessages(messages, 'buy')
-            buyOrdersToCreate.forEach(orderToCreate => {
+            buyOrdersToCreate.forEach((orderToCreate, iterationNo) => {
               if (orderToCreate.estimatedProfit > 0) {
                 setTimeout(() => {
                   this.Bitbay.createBTCBuyOrder(orderToCreate).then(resp => {
                     if (resp.order_id) {
                       this.available = this.available - orderToCreate.buyValue
                       orderToCreate.buyOrderId = resp.order_id
-                      Logger.buy(`${orderCount} / ${buyOrdersToCreate.length} BTC Buy Order Created ${orderToCreate.buyOrderId}, cash left: ${this.available}.`)
+                      Logger.buy(`${iterationNo + 1} / ${orderCount} BTC Buy Order Created ${orderToCreate.buyOrderId}, cash left: ${this.available}.`)
                       Order(orderToCreate).save(error => {
                         if (error) {
                           Logger.error(`Failed to create BTC Buy Order ${orderToCreate.buyOrderId} with error ${error}.`)
@@ -74,7 +74,7 @@ class App {
                       })
                     }
                   })
-                }, orderCount++ * Env.API_TIMEOUT)
+                }, iterationNo * Env.API_TIMEOUT)
               } else {
                 Logger.error(`Estimated profit is too low: ${orderToCreate.estimatedProfit}, skipping.`)
               }

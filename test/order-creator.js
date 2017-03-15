@@ -68,47 +68,60 @@ test('Commision rate is set', t => {
 })
 
 test('getOrders needs to return at least 1 order', t => {
-  const cash = 196000.43
-  const price = 5071
-
-  const ordersToCreate = Creator.getOrdersToCreate(price, cash)
-  const { orders, messages } = ordersToCreate
   let ordersValue = 0
   let ordersProfit = 0
+  const available = 12345
+  const currentPrice = 1234
 
-  t.is(orders.length > 0, true)
-  t.is(messages.length > 0, true)
+  const { amountPerOrder, orderCount } = Creator.getAmountPerOrder(available, Env.ORDER_COUNT)
+  const ordersToCreate = Creator.getOrdersToCreate(currentPrice, available, amountPerOrder, orderCount)
+
+  const { orders, messages } = ordersToCreate
+
+  t.true(orders.length > 0)
+  t.true(messages.length > 0)
 
   orders.map(order => {
     ordersValue += parseFloat(order.buyValue)
     ordersProfit += parseFloat(order.estimatedProfit)
   })
-  t.true(cash.toFixed(3) === ordersValue.toFixed(3))
+  t.true(available.toFixed(3) === ordersValue.toFixed(3))
   t.true(ordersProfit > 0, true)
 })
 
 test('getOrders needs to return orders with buyValue', t => {
-  const cash = 12345
-  const price = 1234
-  const ordersToCreate = Creator.getOrdersToCreate(price, cash)
+  const available = 12345
+  const currentPrice = 1234
+
+  const { amountPerOrder, orderCount } = Creator.getAmountPerOrder(available, Env.ORDER_COUNT)
+  const ordersToCreate = Creator.getOrdersToCreate(currentPrice, available, amountPerOrder, orderCount)
+
   const { orders, messages } = ordersToCreate
 
-  t.is(orders.length > 0, true)
-  t.is(messages.length > 0, true)
+  t.true(orders.length > 0)
+  t.true(messages.length > 0)
 
   const ordersValue = orders.reduce((sum, order) => {
     let newSum = sum += parseFloat(order.buyValue)
     return newSum
   }, 0)
-  t.true(cash.toFixed(3) === ordersValue.toFixed(3), true)
+  t.true(available.toFixed(3) === ordersValue.toFixed(3), true)
 })
 
 test('getMessages needs to return an array', t => {
   const available = 10000
-  const count = 20
-  const amountPerOrder = 3000
-  const startPrice = 8000
-  const messages = Creator.getMessages(available, count, amountPerOrder, startPrice)
+  const currentPrice = 1234
+  const { amountPerOrder, orderCount } = Creator.getAmountPerOrder(available, Env.ORDER_COUNT)
+  const messages = Creator.getMessages(currentPrice, available, amountPerOrder, orderCount)
 
   t.true(messages instanceof Array, true)
+})
+
+test('getAmountPerOrder needs to return two objects', t => {
+  const available = 10000
+  const count = 20
+  const { amountPerOrder, orderCount } = Creator.getAmountPerOrder(available, count)
+
+  t.true(amountPerOrder > Env.MINIMUM_ORDER_VALUE, true)
+  t.true(orderCount > 0, true)
 })

@@ -6,11 +6,22 @@ class OrderCreator {
   constructor () {
     this.Calculator = new Calculator()
   }
-  getOrdersToCreate (currentPrice, available) {
+  getAmountPerOrder (available, orderCount) {
+    let amountPerOrder = available / orderCount
+
+    while (amountPerOrder < Env.MINIMUM_ORDER_VALUE) {
+      orderCount--
+      amountPerOrder = available / orderCount
+    }
+
+    return {
+      amountPerOrder,
+      orderCount
+    }
+  }
+  getOrdersToCreate (currentPrice, available, amountPerOrder, orderCount) {
     const startPrice = currentPrice - Env.START_PRICE_MARGIN
     const orders = []
-    const orderCount = Env.ORDER_COUNT
-    const amountPerOrder = available / orderCount
     const messages = this.getMessages(available, orderCount, amountPerOrder, startPrice)
     for (let i = 0; i < orderCount; i++) {
       const buyPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
@@ -22,10 +33,10 @@ class OrderCreator {
       messages
     }
   }
-  getMessages (available, count, amountPerOrder, startPrice) {
+  getMessages (available, orderCount, amountPerOrder, startPrice) {
     const messages = []
     messages.push(`Have ${available} PLN to invest.`)
-    messages.push(`Will create ${count} BTC Buy Order(s) ${amountPerOrder} PLN each.`)
+    messages.push(`Will create ${orderCount} BTC Buy Order(s) ${amountPerOrder} PLN each.`)
     messages.push(`BTC Buy Orders will start from ${startPrice} PLN`)
     return messages
   }
