@@ -56,7 +56,7 @@ class App {
           // check current price
           this.Bitbay.getBuyPrice().then(buyPrice => {
             // create orders
-            let orderCount = 0
+            let orderCount = 1
             const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreate(buyPrice, this.available)
             Logger.printMessages(messages)
             buyOrdersToCreate.forEach(orderToCreate => {
@@ -66,7 +66,7 @@ class App {
                     if (resp.order_id) {
                       this.available = this.available - orderToCreate.buyValue
                       orderToCreate.buyOrderId = resp.order_id
-                      Logger.info(`BTC Buy Order Created ${orderToCreate.buyOrderId}, cash left: ${this.available}.`)
+                      Logger.info(`${orderCount} / ${buyOrdersToCreate.length} BTC Buy Order Created ${orderToCreate.buyOrderId}, cash left: ${this.available}.`)
                       Order(orderToCreate).save(error => {
                         if (error) {
                           Logger.error(`Failed to create BTC Buy Order ${orderToCreate.buyOrderId} with error ${error}.`)
@@ -169,9 +169,9 @@ class App {
       if (orders.length) {
         Logger.info(`Creating ${orders.length} BTC Sell Order(s)`)
         orders.forEach(order => {
-          let orderCount = 0
+          let orderCount = 1
           setTimeout(() => {
-            Logger.info(`Creating BTC Sell Order #${order.buyOrderId}`)
+            Logger.info(`${orderCount} / ${orders.length} Created BTC Sell Order #${order.buyOrderId}`)
             this.Bitbay.createBTCSellOrder(order).then(response => {
               if (response.order_id) {
                 order.sellOrderId = response.order_id
