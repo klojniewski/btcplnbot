@@ -159,8 +159,8 @@ class App {
         }
       })
       if (lostOrders.length) {
-        const lostOrdersIds = lostOrders.map(order => order.buyOrderId)
-        Logger.error(`Lost ${lostOrders.length} Orders: ${lostOrdersIds}`)
+        const lostOrdersIds = lostOrders.map(order => order.sellOrderId)
+        Logger.error(`Lost ${lostOrders.length} BTC Sell Orders: ${lostOrdersIds}`)
       }
     })
   }

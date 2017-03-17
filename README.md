@@ -18,3 +18,15 @@ Simple trading bot to BitBay.net
 ## Running
 
 `npm start`
+
+## Running Webapp
+
+`node webapp.js`
+
+## Todo
+
+- when creating BTC buy order, I'm calculating price on SELL price, check if my calculated price is lower than highest BUY Price
+- save API response when creating ORDER
+- add time & date to communicates
+- extract front & backend from webapp
+- use static file server
