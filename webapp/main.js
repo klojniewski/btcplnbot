@@ -1,30 +1,67 @@
-/* globals fetch */
-const updateTables = function () {
-  fetch('./get-orders')
-    .then(
-      function (response) {
-        if (response.status !== 200) {
-          console.log('Looks like there was a problem. Status Code: ' +
-            response.status)
-          return
-        }
+/* globals Vue */
+const API_URL = '//localhost:4000/'
+const app = new Vue({// eslint-disable-line
+  el: '#app',
+  data: {
+    title: 'BTCPLN Bot Dashboard',
+    orders: {
+      new: {},
+      bought: {},
+      tobesold: {},
+      sold: {}
+    },
+    profit: ''
+  },
+  methods: {
+    fetchData: function () {
+      this.$http.get(API_URL + 'get-orders').then(response => {
+        const data = response.body
+        this.profit = data.profit.toFixed(2) + ' PLN'
+        this.orders.new = data.new
+        this.orders.bought = data.bought
+        this.orders.tobesold = data.tobesold
+        this.orders.sold = data.sold
+      })
+    }
+  },
+  created: function () {
+    this.fetchData()
 
-        // Examine the text in the response
-        response.json().then(function (data) {
-          document.querySelector('#new tbody').innerHTML = data.new
-          document.querySelector('#bought tbody').innerHTML = data.bought
-          document.querySelector('#to-be-sold tbody').innerHTML = data.tobesold
-          document.querySelector('#sold tbody').innerHTML = data.sold
+    setInterval(() => {
+      this.fetchData()
+    }, 6000)
+  }
+})
 
-          document.querySelector('#sold h1 span').innerHTML = data.profit
-        })
-      }
-    )
-    .catch(function (err) {
-      console.log('Fetch Error :-S', err)
-    })
-}
+Vue.component('order-item', {
+  props: ['order'],
+  template: `
+    <tr>
+      <td>{{ order.buyPrice.toFixed(2) }} PLN</td>
+      <td>{{ order.buySize.toFixed(6) }} BTC</td>
+      <td>{{ order.buyValue.toFixed(2) }} PLN</td>
+      <td>{{ order.sellPrice.toFixed(2) }} PLN </td>
+      <td>{{ order.sellSize.toFixed(6) }} BTC</td>
+      <td>{{ order.sellValue.toFixed(2) }} PLN</td>
+      <td>{{ order.estimatedProfit.toFixed(2) }} PLN</td>
+      <td>{{ order.dateCreated }}</td>
+      <td>{{ order.dateFinished || '-' }}</td>
+    </tr>
+  `
+})
 
-setInterval(() => {
-  updateTables()
-}, 5000)
+Vue.component('table-header', {
+  props: [],
+  template: `
+    <tr>
+      <th>Buy Price</th>
+      <th>Buy Size</th>
+      <th>Buy Value</th>
+      <th>Sell Price</th>
+      <th>Sell Size</th>
+      <th>Sell Value</th>
+      <th>Profit</th>
+      <th>Started</th>
+      <th>Finished</th>
+    </tr>`
+})

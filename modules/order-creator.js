@@ -68,7 +68,7 @@ class OrderCreator {
       sellCommision,
       sellValue,
       estimatedProfit,
-      dateCreated: new Date(),
+      dateCreated: Math.floor(Date.now() / 1000),
       dateFinished: null,
       status: Env.STATUS_NEW,
       commisionRate: Number(Env.COMMISION)

@@ -30,3 +30,5 @@ Simple trading bot to BitBay.net
 - add time & date to communicates
 - extract front & backend from webapp
 - use static file server
+- move Math.floor(Date.now() / 1000) to utils.js
+- add integration tests

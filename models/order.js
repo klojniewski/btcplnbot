@@ -16,12 +16,12 @@ const orderSchema = mongoose.Schema({
   commisionRate: Number,
   estimatedProfit: Number,
   status: {type: Number, default: Env.STATUS_NEW},
-  dateCreated: String,
-  dateFinished: String
+  dateCreated: Number,
+  dateFinished: Number
 })
 
 orderSchema.statics.findByStatusId = function (statusId, callback) {
-  return this.find({ status: statusId }, callback)
+  return this.find({ status: statusId }, callback).sort({ dateCreated: 1 })
 }
 
 orderSchema.statics.findActive = function (callback) {
@@ -35,7 +35,7 @@ orderSchema.statics.findNew = function (callback) {
 orderSchema.methods.saveUpdatedStatus = function (statusId, callback) {
   this.status = statusId
   if (statusId === Env.STATUS_SOLD) {
-    this.dateFinished = new Date()
+    this.dateFinished = Math.floor(Date.now() / 1000)
   }
   this.save({}, callback)
 }

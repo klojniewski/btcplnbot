@@ -12,11 +12,16 @@ class WebApp {
   run () {
     const pathPrefix = path.join(`${__dirname}/../webapp/`)
     this.app = express()
+    this.app.use(function (req, res, next) {
+      res.header('Access-Control-Allow-Origin', '*')
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+      next()
+    })
     this.app.get('/', function (req, res) {
       res.sendFile(pathPrefix + 'index.html')
     })
-    this.app.listen(Env.WEBAPP_PORT, function () {
-      console.log(`Webapp is running: http://localhost:${Env.WEBAPP_PORT}/`)
+    this.app.listen(Env.WEBAPI_PORT, function () {
+      console.log(`Webapp is running: http://localhost:${Env.WEBAPI_PORT}/`)
     })
     this.app.get('/main.js', function (req, res) {
       res.sendFile(pathPrefix + 'main.js')
@@ -27,31 +32,16 @@ class WebApp {
         const responseHtml = [[], [], [], [], []]
         let profit = 0
         resp.forEach(order => {
-          responseHtml[order.status - 1].push(`
-            <tr>
-              <td>${order.buyPrice || ''}</td>
-              <td>${order.buySize}</td>
-              <td>${order.buyCommision}</td>
-              <td>${order.buyValue}</td>
-              <td>${order.sellPrice}</td>
-              <td>${order.sellSize}</td>
-              <td>${order.sellCommision}</td>
-              <td>${order.sellValue}</td>
-              <td>${order.estimatedProfit}</td>
-              <td>${order.dateCreated}</td>
-              <td>${order.dateFinished || '-'}</td>
-              <td>${order.commisionRate}</td>
-            </tr>
-          `)
+          responseHtml[order.status - 1].push(order)
           if (order.status === Env.STATUS_SOLD) {
             profit += order.estimatedProfit
           }
         })
         res.json({
-          new: responseHtml[0].join(''),
-          bought: responseHtml[1].join(''),
-          tobesold: responseHtml[2].join(''),
-          sold: responseHtml[3].join(''),
+          new: responseHtml[0],
+          bought: responseHtml[1],
+          tobesold: responseHtml[2],
+          sold: responseHtml[3],
           profit
         })
       })

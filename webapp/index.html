@@ -21,15 +21,24 @@
   </head>
   <body>
     <div class="container-fluid">
-      <div class="starter-template">
-        <h1>BTCPLN Bot</h1>
+      <div class="starter-template" id="app">
+        <h1>{{ title }}</h1>
+        <h2>Current Profit: {{ profit }}</h2>
         <div>
           <!-- Nav tabs -->
           <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active"><a href="#new" aria-controls="new" role="tab" data-toggle="tab">New</a></li>
-            <li role="presentation"><a href="#bought" aria-controls="bought" role="tab" data-toggle="tab">BTC Bought</a></li>
-            <li role="presentation"><a href="#to-be-sold" aria-controls="to-be-sold" role="tab" data-toggle="tab">BTC to be Sold</a></li>
-            <li role="presentation"><a href="#sold" aria-controls="sold" role="tab" data-toggle="tab">SOLD</a></li>
+            <li role="presentation" class="active">
+              <a href="#new" aria-controls="new" role="tab" data-toggle="tab">New ({{ orders.new.length }})</a>
+            </li>
+            <li role="presentation">
+              <a href="#bought" aria-controls="bought" role="tab" data-toggle="tab">BTC Bought ({{ orders.bought.length }})</a>
+            </li>
+            <li role="presentation">
+              <a href="#to-be-sold" aria-controls="to-be-sold" role="tab" data-toggle="tab">BTC to be Sold ({{ orders.tobesold.length }})</a>
+            </li>
+            <li role="presentation">
+              <a href="#sold" aria-controls="sold" role="tab" data-toggle="tab">Finished ({{ orders.sold.length }})</a>
+            </li>
           </ul>
 
           <!-- Tab panes -->
@@ -37,93 +46,40 @@
             <div role="tabpanel" class="tab-pane active" id="new">
               <table class="table">
                 <thead>
-                  <tr>
-                    <th>buyPrice</th>
-                    <th>buySize</th>
-                    <th>buyCommision</th>
-                    <th>buyValue</th>
-                    <th>sellPrice</th>
-                    <th>sellSize</th>
-                    <th>sellCommision</th>
-                    <th>sellValue</th>
-                    <th>estimatedProfit</th>
-                    <th>dateCreated</th>
-                    <th>dateFinished</th>
-                    <th>commisionRate</th>
-                  </tr>
+                  <tr is="table-header"></tr>
                 </thead>
                 <tbody>
-                  <tr><td>Loading</td></tr>
+                    <tr is="order-item" v-for="order in orders.new" v-bind:order="order" :key="order.id"></tr>
                 </tbody>
               </table>
             </div>
             <div role="tabpanel" class="tab-pane" id="bought">
               <table class="table">
                 <thead>
-                  <tr>
-                    <th>buyPrice</th>
-                    <th>buySize</th>
-                    <th>buyCommision</th>
-                    <th>buyValue</th>
-                    <th>sellPrice</th>
-                    <th>sellSize</th>
-                    <th>sellCommision</th>
-                    <th>sellValue</th>
-                    <th>estimatedProfit</th>
-                    <th>dateCreated</th>
-                    <th>dateFinished</th>
-                    <th>commisionRate</th>
-                  </tr>
+                  <tr is="table-header"></tr>
                 </thead>
                 <tbody>
-                  <tr></tr>
+                    <tr is="order-item" v-for="order in orders.bought" v-bind:order="order" :key="order.id"></tr>
                 </tbody>
               </table>
             </div>
             <div role="tabpanel" class="tab-pane" id="to-be-sold">
               <table class="table">
                 <thead>
-                  <tr>
-                    <th>buyPrice</th>
-                    <th>buySize</th>
-                    <th>buyCommision</th>
-                    <th>buyValue</th>
-                    <th>sellPrice</th>
-                    <th>sellSize</th>
-                    <th>sellCommision</th>
-                    <th>sellValue</th>
-                    <th>estimatedProfit</th>
-                    <th>dateCreated</th>
-                    <th>dateFinished</th>
-                    <th>commisionRate</th>
-                  </tr>
+                  <tr is="table-header"></tr>
                 </thead>
                 <tbody>
-                  <tr></tr>
+                    <tr is="order-item" v-for="order in orders.tobesold" v-bind:order="order" :key="order.id"></tr>
                 </tbody>
               </table>
             </div>
             <div role="tabpanel" class="tab-pane" id="sold">
-              <h1>Profit: <span></span></h1>
               <table class="table">
                 <thead>
-                  <tr>
-                    <th>buyPrice</th>
-                    <th>buySize</th>
-                    <th>buyCommision</th>
-                    <th>buyValue</th>
-                    <th>sellPrice</th>
-                    <th>sellSize</th>
-                    <th>sellCommision</th>
-                    <th>sellValue</th>
-                    <th>estimatedProfit</th>
-                    <th>dateCreated</th>
-                    <th>dateFinished</th>
-                    <th>commisionRate</th>
-                  </tr>
+                  <tr is="table-header"></tr>
                 </thead>
                 <tbody>
-                  <tr></tr>
+                  <tr is="order-item" v-for="order in orders.sold" v-bind:order="order" :key="order.id"></tr>
                 </tbody>
               </table>
             </div>
@@ -132,6 +88,8 @@
         </div>
       </div>
     </div><!-- /.container -->
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://cdn.jsdelivr.net/vue.resource/1.2.1/vue-resource.min.js"></script> 
     <script src="./main.js"></script>
   </body>
 </html>
