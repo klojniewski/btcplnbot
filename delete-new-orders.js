@@ -20,7 +20,7 @@ class App {
       activeOrders.forEach(activeOrder => {
         setTimeout(() => {
           this.Bitbay.cancelOrder(activeOrder.buyOrderId).then(resp => {
-            activeOrder.remove()
+            activeOrder.saveUpdatedStatus(Env.STATUS_CANCELED)
             Logger.info(`#${resp.order_id} was canceled.`)
           })
         }, orderNo++ * Env.API_TIMEOUT)
