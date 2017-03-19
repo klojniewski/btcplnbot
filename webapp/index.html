@@ -39,6 +39,9 @@
             <li role="presentation">
               <a href="#sold" aria-controls="sold" role="tab" data-toggle="tab">Finished ({{ orders.sold.length }})</a>
             </li>
+            <li role="presentation">
+              <a href="#canceled" aria-controls="canceled" role="tab" data-toggle="tab">Canceled ({{ orders.canceled.length }})</a>
+            </li>
           </ul>
 
           <!-- Tab panes -->
@@ -80,6 +83,16 @@
                 </thead>
                 <tbody>
                   <tr is="order-item" v-for="order in orders.sold" v-bind:order="order" :key="order.id"></tr>
+                </tbody>
+              </table>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="canceled">
+              <table class="table">
+                <thead>
+                  <tr is="table-header"></tr>
+                </thead>
+                <tbody>
+                  <tr is="order-item" v-for="order in orders.canceled" v-bind:order="order" :key="order.id"></tr>
                 </tbody>
               </table>
             </div>

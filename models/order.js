@@ -34,7 +34,7 @@ orderSchema.statics.findNew = function (callback) {
 
 orderSchema.methods.saveUpdatedStatus = function (statusId, callback) {
   this.status = statusId
-  if (statusId === Env.STATUS_SOLD) {
+  if (statusId === Env.STATUS_SOLD || statusId === Env.STATUS_CANCELED) {
     this.dateFinished = Math.floor(Date.now() / 1000)
   }
   this.save({}, callback)

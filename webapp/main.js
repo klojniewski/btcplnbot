@@ -8,7 +8,8 @@ const app = new Vue({// eslint-disable-line
       new: {},
       bought: {},
       tobesold: {},
-      sold: {}
+      sold: {},
+      canceled: {}
     },
     profit: ''
   },
@@ -21,6 +22,7 @@ const app = new Vue({// eslint-disable-line
         this.orders.bought = data.bought
         this.orders.tobesold = data.tobesold
         this.orders.sold = data.sold
+        this.orders.canceled = data.canceled
       })
     }
   },
@@ -44,8 +46,8 @@ Vue.component('order-item', {
       <td>{{ order.sellSize.toFixed(6) }} BTC</td>
       <td>{{ order.sellValue.toFixed(2) }} PLN</td>
       <td>{{ order.estimatedProfit.toFixed(2) }} PLN</td>
-      <td>{{ order.dateCreated }}</td>
-      <td>{{ order.dateFinished || '-' }}</td>
+      <td>{{ new Date(Number(order.dateCreated) * 1000).toString() }}</td>
+      <td>{{ order.dateFinished ? new Date(Number(order.dateFinished) * 1000).toString() : '-' }}</td>
     </tr>
   `
 })

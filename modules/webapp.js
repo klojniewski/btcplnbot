@@ -28,7 +28,7 @@ class WebApp {
     })
 
     this.app.get('/get-orders', function (req, res) {
-      Order.find({}).then(resp => {
+      Order.find({}).sort({ dateCreated: -1 }).then(resp => {
         const responseHtml = [[], [], [], [], []]
         let profit = 0
         resp.forEach(order => {
@@ -42,6 +42,7 @@ class WebApp {
           bought: responseHtml[1],
           tobesold: responseHtml[2],
           sold: responseHtml[3],
+          canceled: responseHtml[4],
           profit
         })
       })
