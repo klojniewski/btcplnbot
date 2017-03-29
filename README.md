@@ -32,3 +32,5 @@ Simple trading bot to BitBay.net
 - use static file server
 - move Math.floor(Date.now() / 1000) to utils.js
 - add integration tests
+- change current functions into pure functions (ex. remove Env injections)
+- 

@@ -47,6 +47,12 @@ class WebApp {
         })
       })
     })
+
+    this.app.get('/get-all', function (req, res) {
+      Order.find({}).sort({ dateCreated: -1 }).then(resp => {
+        res.json(resp)
+      })
+    })
   }
 }
 

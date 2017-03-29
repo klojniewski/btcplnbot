@@ -1,108 +1,33 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html id="app">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>BTCPLN Bot</title>
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
-    <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-    <script src=https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js></script>
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+    <script type="text/javascript" src="//code.jquery.com/jquery-2.1.3.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.17/daterangepicker.min.css">
+    <title>{{ title }}</title>
   </head>
   <body>
     <div class="container-fluid">
-      <div class="starter-template" id="app">
-        <h1>{{ title }}</h1>
-        <h2>Current Profit: {{ profit }}</h2>
-        <div>
-          <!-- Nav tabs -->
-          <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active">
-              <a href="#new" aria-controls="new" role="tab" data-toggle="tab">New ({{ orders.new.length }})</a>
-            </li>
-            <li role="presentation">
-              <a href="#bought" aria-controls="bought" role="tab" data-toggle="tab">BTC Bought ({{ orders.bought.length }})</a>
-            </li>
-            <li role="presentation">
-              <a href="#to-be-sold" aria-controls="to-be-sold" role="tab" data-toggle="tab">BTC to be Sold ({{ orders.tobesold.length }})</a>
-            </li>
-            <li role="presentation">
-              <a href="#sold" aria-controls="sold" role="tab" data-toggle="tab">Finished ({{ orders.sold.length }})</a>
-            </li>
-            <li role="presentation">
-              <a href="#canceled" aria-controls="canceled" role="tab" data-toggle="tab">Canceled ({{ orders.canceled.length }})</a>
-            </li>
-          </ul>
-
-          <!-- Tab panes -->
-          <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="new">
-              <table class="table">
-                <thead>
-                  <tr is="table-header"></tr>
-                </thead>
-                <tbody>
-                    <tr is="order-item" v-for="order in orders.new" v-bind:order="order" :key="order.id"></tr>
-                </tbody>
-              </table>
-            </div>
-            <div role="tabpanel" class="tab-pane" id="bought">
-              <table class="table">
-                <thead>
-                  <tr is="table-header"></tr>
-                </thead>
-                <tbody>
-                    <tr is="order-item" v-for="order in orders.bought" v-bind:order="order" :key="order.id"></tr>
-                </tbody>
-              </table>
-            </div>
-            <div role="tabpanel" class="tab-pane" id="to-be-sold">
-              <table class="table">
-                <thead>
-                  <tr is="table-header"></tr>
-                </thead>
-                <tbody>
-                    <tr is="order-item" v-for="order in orders.tobesold" v-bind:order="order" :key="order.id"></tr>
-                </tbody>
-              </table>
-            </div>
-            <div role="tabpanel" class="tab-pane" id="sold">
-              <table class="table">
-                <thead>
-                  <tr is="table-header"></tr>
-                </thead>
-                <tbody>
-                  <tr is="order-item" v-for="order in orders.sold" v-bind:order="order" :key="order.id"></tr>
-                </tbody>
-              </table>
-            </div>
-            <div role="tabpanel" class="tab-pane" id="canceled">
-              <table class="table">
-                <thead>
-                  <tr is="table-header"></tr>
-                </thead>
-                <tbody>
-                  <tr is="order-item" v-for="order in orders.canceled" v-bind:order="order" :key="order.id"></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
+      <div class="container">
+        <h1>Total profit: {{ profit }}</h1>
+        <div class="btn-group" role="toolbar" aria-label="...">
+          <span class="label label-primary">{{ activeCount }} BTC To Buy</span>
+          <span class="label label-info">{{ toBeSoldCount }} BTC To Sell</span>
+          <span class="label label-success">{{ finishedCount }} Sold</span>
+          <span class="label label-danger">{{ canceledCount }} Canceled</span>
         </div>
+        <v-client-table :data="tableData" :columns="columns" :options="options"></v-client-table>
       </div>
     </div><!-- /.container -->
-    <script src="https://unpkg.com/vue"></script>
-    <script src="https://cdn.jsdelivr.net/vue.resource/1.2.1/vue-resource.min.js"></script> 
-    <script src="./main.js"></script>
+    <link rel="stylesheet" type="text/css" href="./main.css">
+    <script type="text/javascript" src="https://rawgit.com/matfish2/vue-tables/master/dist/vue-tables.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.1/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/2.1.17/daterangepicker.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.28/vue.min.js"></script>
+    <script type="text/javascript" src="./main.js"></script>
   </body>
 </html>
