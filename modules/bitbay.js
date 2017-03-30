@@ -92,6 +92,25 @@ class Bitbay {
       this.Logger.error(`Error when fetching account info ${error}`)
     })
   }
+  getInfo () {
+    const currency = 'PLN'
+    const data = Object.assign({}, this.getBase('info'), {
+      currency
+    })
+    const postQueryString = queryString.stringify(data)
+
+    return axios.post(Env.API_URL, postQueryString, {
+      headers: this.getApiHeaders(postQueryString)
+    }).then(function (response) {
+      if (!response.data.balances) {
+        const error = `Error when fetching user info`
+        return Promise.reject(error)
+      }
+      return response.data
+    }).catch(error => {
+      this.Logger.error(`Error when fetching user info: ${error}`)
+    })
+  }
   getPLNBalance () {
     const currency = 'PLN'
     const data = Object.assign({}, this.getBase('info'), {
@@ -106,7 +125,7 @@ class Bitbay {
         const error = `Error when fetching user PLN balance`
         return Promise.reject(error)
       }
-      return response.data.balances.PLN.available
+      return response.data.balances.PLN
     }).catch(error => {
       this.Logger.error(`Error when fetching user PLN balance: ${error}`)
     })

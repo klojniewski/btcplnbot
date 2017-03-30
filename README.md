@@ -1,4 +1,4 @@
-# btcplnbot
+a# btcplnbot
 
 Simple trading bot to BitBay.net
 
@@ -33,4 +33,7 @@ Simple trading bot to BitBay.net
 - move Math.floor(Date.now() / 1000) to utils.js
 - add integration tests
 - change current functions into pure functions (ex. remove Env injections)
-- 
+- add formatting helpers in webapp (PLN, BTC)
+- change getPLNBalance into getInfo method
+- use fee balue from getInfo API endpoint
+- ./main.css is not loading in webapp

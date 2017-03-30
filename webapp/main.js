@@ -14,13 +14,25 @@ const API_URL = '//localhost:4000/'
 const app = new Vue({// eslint-disable-line
   el: '#app',
   ready: function () {
-    this.fetchData()
+    this.fetchOrders()
     setInterval(() => {
-      this.fetchData()
+      this.fetchOrders()
     }, 6000)
+    this.fetchInfo()
+    setInterval(() => {
+      this.fetchRates()
+    }, 3000)
+    this.fetchRates()
   },
   methods: {
-    fetchData: function () {
+    fetchRates: function () {
+      fetch('https://bitbay.net/API/Public/BTCPLN/ticker.json').then(response => {
+        response.json().then(data => {
+          this.bitBay = data
+        })
+      })
+    },
+    fetchOrders: function () {
       fetch(API_URL + 'get-all').then(response => {
         response.json().then(data => {
           let profit = 0
@@ -47,21 +59,33 @@ const app = new Vue({// eslint-disable-line
             return object
           })
           this.tableData = data
-          this.profit = profit.toFixed(2) + ' PLN'
-          this.title = `[${this.profit}] BTC PLN Bot`
+          this.profit = profit
+          this.title = `[${Number(this.profit).toFixed(2)}] BTC PLN Bot`
           this.activeCount = activeCount
           this.toBeSoldCount = toBeSoldCount
           this.finishedCount = finishedCount
           this.canceledCount = canceledCount
         })
       })
+    },
+    fetchInfo: function () {
+      fetch(API_URL + 'get-info').then(response => {
+        response.json().then(data => {
+          const invested = data.balances.PLN.locked
+          this.invested = Number(invested).toFixed(2) + ' PLN'
+          this.roi = Number(this.profit / invested * 100).toFixed(2) + '%'
+        })
+      })
     }
   },
   data: {
+    bitBay: {},
     activeCount: 0,
     toBeSoldCount: 0,
     finishedCount: 0,
     canceledCount: 0,
+    invested: 0,
+    roi: 0,
     columns: ['buyPrice', 'buySize', 'buyValue', 'sellPrice', 'sellSize', 'sellValue', 'estimatedProfit', 'status', 'dateCreated', 'dateFinished'],
     options: {
       toMomentFormat: true,

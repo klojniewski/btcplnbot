@@ -3,28 +3,37 @@ const Mongoose = require('mongoose')
 const express = require('express')
 const path = require('path')
 const Order = require('../models/order')
+const Bitbay = require('../modules/Bitbay')
 
 class WebApp {
   constructor () {
     Mongoose.connect(Env.MONGO_CONNECTION_STRING)
     Mongoose.Promise = global.Promise
+
+    this.Bitbay = new Bitbay()
   }
   run () {
     const pathPrefix = path.join(`${__dirname}/../webapp/`)
     this.app = express()
+
     this.app.use(function (req, res, next) {
       res.header('Access-Control-Allow-Origin', '*')
       res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
       next()
     })
+
     this.app.get('/', function (req, res) {
       res.sendFile(pathPrefix + 'index.html')
     })
-    this.app.listen(Env.WEBAPI_PORT, function () {
-      console.log(`Webapp is running: http://localhost:${Env.WEBAPI_PORT}/`)
-    })
+
     this.app.get('/main.js', function (req, res) {
       res.sendFile(pathPrefix + 'main.js')
+    })
+
+    this.app.get('/get-info', (req, res) => {
+      this.Bitbay.getInfo().then(response => {
+        res.json(response)
+      })
     })
 
     this.app.get('/get-orders', function (req, res) {
@@ -52,6 +61,10 @@ class WebApp {
       Order.find({}).sort({ dateCreated: -1 }).then(resp => {
         res.json(resp)
       })
+    })
+
+    this.app.listen(Env.WEBAPI_PORT, function () {
+      console.log(`Webapp is running: http://localhost:${Env.WEBAPI_PORT}/`)
     })
   }
 }

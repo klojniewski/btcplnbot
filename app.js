@@ -49,8 +49,8 @@ class App {
       this.Bitbay.getPLNBalance(),
       Order.findActive()
     ]).then(values => {
-      const [ PLN, activeOrders ] = values
-      this.available = PLN - Env.MONEY_LEFT
+      const [ balance, activeOrders ] = values
+      this.available = balance.available - Env.MONEY_LEFT
       if (activeOrders.length < Env.ACTIVE_ORDERS_LIMIT) {
         if (this.available > Env.MINIMUM_ORDER_VALUE) {
           // check current price

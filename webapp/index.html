@@ -12,8 +12,23 @@
   </head>
   <body>
     <div class="container-fluid">
-      <div class="container">
-        <h1>Total profit: {{ profit }}</h1>
+      <div class="row">
+        <div class="col-md-8">
+          <h1>Total profit: {{ profit.toFixed(2) + ' PLN' }}</h1>
+          <h2>Invested: {{ invested }}</h2>
+          <h2>ROI: {{ roi }}</h2>
+        </div>
+        <div class="col-md-4">
+          <h2>BitBay Stats:</h2>
+          <ul>
+            <li>Sell Price: <strong>{{ bitBay.ask.toFixed(2) + ' PLN' }}</strong></li>
+            <li>Buy Price: <strong>{{ bitBay.bid.toFixed(2) + ' PLN' }}</strong></li>
+            <li>Average: <strong>{{ bitBay.average.toFixed(2) + ' PLN' }}</strong></li>
+            <li>Max: <strong>{{ bitBay.max.toFixed(2) + ' PLN' }}</strong></li>
+            <li>Min: <strong>{{ bitBay.min.toFixed(2) + ' PLN' }}</strong></li>
+          </ul>
+        </div>
+      </div>
         <div class="btn-group" role="toolbar" aria-label="...">
           <span class="label label-primary">{{ activeCount }} BTC To Buy</span>
           <span class="label label-info">{{ toBeSoldCount }} BTC To Sell</span>
@@ -21,7 +36,6 @@
           <span class="label label-danger">{{ canceledCount }} Canceled</span>
         </div>
         <v-client-table :data="tableData" :columns="columns" :options="options"></v-client-table>
-      </div>
     </div><!-- /.container -->
     <link rel="stylesheet" type="text/css" href="./main.css">
     <script type="text/javascript" src="https://rawgit.com/matfish2/vue-tables/master/dist/vue-tables.min.js"></script>
