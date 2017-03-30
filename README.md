@@ -37,3 +37,4 @@ Simple trading bot to BitBay.net
 - change getPLNBalance into getInfo method
 - use fee balue from getInfo API endpoint
 - ./main.css is not loading in webapp
+- [webapp] ability to cancel specific BTC Buy orders
