@@ -63,6 +63,19 @@ class WebApp {
       })
     })
 
+    this.app.get('/cancel-order/:buyOrderId', function (req, res) {
+      const buyOrderId = req.params.buyOrderId
+      Order.findOne({
+        buyOrderId,
+        status: Env.STATUS_NEW
+      }).then(orderToCancel => {
+        this.Bitbay.cancelOrder(orderToCancel.buyOrderId).then(resp => {
+          orderToCancel.saveUpdatedStatus(Env.STATUS_CANCELED)
+          res.json(orderToCancel)
+        })
+      })
+    })
+
     this.app.listen(Env.WEBAPI_PORT, function () {
       console.log(`Webapp is running: http://localhost:${Env.WEBAPI_PORT}/`)
     })

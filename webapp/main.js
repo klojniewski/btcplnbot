@@ -1,4 +1,4 @@
-/* globals Vue, moment, fetch, VueTables, window */
+/* globals Vue, moment, fetch, VueTables, window, confirm, alert */
 Vue.use(VueTables.client, {
   compileTemplates: true,
   filterByColumn: true,
@@ -16,7 +16,7 @@ const app = new Vue({// eslint-disable-line
   ready: function () {
     this.fetchData()
 
-    setTimeout(() => {
+    setInterval(() => {
       this.fetchData()
     }, 10 * 1000)
   },
@@ -84,6 +84,21 @@ const app = new Vue({// eslint-disable-line
       const invested = data.balances.PLN.locked
       this.invested = Number(invested).toFixed(2) + ' PLN'
       this.roi = Number(this.profit / invested * 100).toFixed(2) + '%'
+    },
+    deleteMe: function (buyOrderId) {
+      if (confirm('Are you sure?' + buyOrderId)) {
+        fetch(API_URL + 'cancel-order/' + buyOrderId).then(resp => {
+          resp.json().then(canceledOrder => {
+            if (canceledOrder) {
+              this.tableData = this.tableData.filter(tableItem => {
+                return tableItem.buyOrderId !== canceledOrder.buyOrderId
+              })
+            } else {
+              alert('Order not found')
+            }
+          })
+        })
+      }
     }
   },
   data: {
@@ -94,9 +109,8 @@ const app = new Vue({// eslint-disable-line
     canceledCount: 0,
     invested: 0,
     roi: 0,
-    columns: ['buyPrice', 'toBuy', 'buySize', 'buyValue', 'sellPrice', 'toSell', 'sellSize', 'sellValue', 'estimatedProfit', 'status', 'dateCreated', 'dateFinished'],
+    columns: ['buyPrice', 'toBuy', 'buySize', 'buyValue', 'sellPrice', 'toSell', 'sellSize', 'sellValue', 'estimatedProfit', 'status', 'dateCreated', 'dateFinished', 'delete'],
     options: {
-      toMomentFormat: true,
       perPage: 50,
       dateFormat: 'YYYY-MM-DD HH:mm',
       dateColumns: ['dateCreated', 'dateFinished'],
@@ -135,6 +149,9 @@ const app = new Vue({// eslint-disable-line
         },
         estimatedProfit: item => {
           return `${item.estimatedProfit.toFixed(2)} PLN`
+        },
+        delete: item => {
+          return `<a href='javascript:void(0);' @click='$parent.deleteMe(${item.buyOrderId})'><i class='glyphicon glyphicon-erase'></i></a>`
         }
       },
       listColumns: {
