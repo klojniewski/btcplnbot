@@ -3,7 +3,7 @@ const Mongoose = require('mongoose')
 const express = require('express')
 const path = require('path')
 const Order = require('../models/order')
-const Bitbay = require('../modules/Bitbay')
+const Bitbay = require('../modules/bitbay')
 
 class WebApp {
   constructor () {
