@@ -69,10 +69,12 @@ class WebApp {
         buyOrderId,
         status: Env.STATUS_NEW
       }).then(orderToCancel => {
-        this.Bitbay.cancelOrder(orderToCancel.buyOrderId).then(resp => {
-          orderToCancel.saveUpdatedStatus(Env.STATUS_CANCELED)
-          res.json(orderToCancel)
-        })
+        if (orderToCancel) {
+          this.Bitbay.cancelOrder(orderToCancel.buyOrderId).then(resp => {
+            orderToCancel.saveUpdatedStatus(Env.STATUS_CANCELED)
+            res.json(orderToCancel)
+          })
+        }
       })
     })
 
