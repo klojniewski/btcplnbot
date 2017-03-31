@@ -14,68 +14,76 @@ const API_URL = `//${window.location.host}/`
 const app = new Vue({// eslint-disable-line
   el: '#app',
   ready: function () {
-    this.fetchOrders()
-    setInterval(() => {
-      this.fetchOrders()
-    }, 6000)
-    this.fetchInfo()
-    setInterval(() => {
-      this.fetchRates()
-    }, 3000)
-    this.fetchRates()
+    this.fetchData()
+
+    setTimeout(() => {
+      this.fetchData()
+    }, 10 * 1000)
   },
   methods: {
-    fetchRates: function () {
-      fetch('https://bitbay.net/API/Public/BTCPLN/ticker.json').then(response => {
-        response.json().then(data => {
+    fetchData: function () {
+      Promise.all([
+        this.fetchRates(),
+        this.fetchOrders(),
+        this.fetchInfo()
+      ]).then(values => {
+        const [ratesResponse, ordersResponse, infoResponse] = values
+
+        ratesResponse.json().then(data => {
           this.bitBay = data
+
+          ordersResponse.json().then(this.parseOrders)
+          infoResponse.json().then(this.parseInfo)
         })
       })
+    },
+    fetchRates: function () {
+      return fetch('https://bitbay.net/API/Public/BTCPLN/ticker.json')
     },
     fetchOrders: function () {
-      fetch(API_URL + 'get-all').then(response => {
-        response.json().then(data => {
-          let profit = 0
-          let activeCount = 0
-          let toBeSoldCount = 0
-          let finishedCount = 0
-          let canceledCount = 0
-          data.map(object => {
-            object.dateCreated = moment(new Date(Number(object.dateCreated) * 1000))
-            object.dateFinished = moment(new Date(Number(object.dateFinished) * 1000))
-            if (object.status === 4) {
-              profit += object.estimatedProfit
-              finishedCount++
-            }
-            if (object.status === 1) {
-              activeCount++
-            }
-            if (object.status === 3) {
-              toBeSoldCount++
-            }
-            if (object.status === 5) {
-              canceledCount++
-            }
-            return object
-          })
-          this.tableData = data
-          this.profit = profit
-          this.title = `[${Number(this.profit).toFixed(2)}] BTC PLN Bot`
-          this.activeCount = activeCount
-          this.toBeSoldCount = toBeSoldCount
-          this.finishedCount = finishedCount
-          this.canceledCount = canceledCount
-        })
-      })
+      return fetch(API_URL + 'get-all')
     },
     fetchInfo: function () {
-      fetch(API_URL + 'get-info').then(response => {
-        response.json().then(data => {
-          const invested = data.balances.PLN.locked
-          this.invested = Number(invested).toFixed(2) + ' PLN'
-          this.roi = Number(this.profit / invested * 100).toFixed(2) + '%'
-        })
+      return fetch(API_URL + 'get-info')
+    },
+    parseOrders: function (data) {
+      let profit = 0
+      let activeCount = 0
+      let toBeSoldCount = 0
+      let finishedCount = 0
+      let canceledCount = 0
+      data.map(object => {
+        object.dateCreated = moment(new Date(Number(object.dateCreated) * 1000))
+        object.dateFinished = moment(new Date(Number(object.dateFinished) * 1000))
+        if (object.status === 4) {
+          profit += object.estimatedProfit
+          finishedCount++
+        }
+        if (object.status === 1) {
+          activeCount++
+        }
+        if (object.status === 3) {
+          toBeSoldCount++
+        }
+        if (object.status === 5) {
+          canceledCount++
+        }
+        object.toBuy = this.bitBay.ask - object.buyPrice
+        object.toSell = object.sellPrice - this.bitBay.bid
+        return object
       })
+      this.tableData = data
+      this.profit = profit
+      this.title = `[${Number(this.profit).toFixed(2)}] BTC PLN Bot`
+      this.activeCount = activeCount
+      this.toBeSoldCount = toBeSoldCount
+      this.finishedCount = finishedCount
+      this.canceledCount = canceledCount
+    },
+    parseInfo: function (data) {
+      const invested = data.balances.PLN.locked
+      this.invested = Number(invested).toFixed(2) + ' PLN'
+      this.roi = Number(this.profit / invested * 100).toFixed(2) + '%'
     }
   },
   data: {
@@ -86,7 +94,7 @@ const app = new Vue({// eslint-disable-line
     canceledCount: 0,
     invested: 0,
     roi: 0,
-    columns: ['buyPrice', 'buySize', 'buyValue', 'sellPrice', 'sellSize', 'sellValue', 'estimatedProfit', 'status', 'dateCreated', 'dateFinished'],
+    columns: ['buyPrice', 'toBuy', 'buySize', 'buyValue', 'sellPrice', 'toSell', 'sellSize', 'sellValue', 'estimatedProfit', 'status', 'dateCreated', 'dateFinished'],
     options: {
       toMomentFormat: true,
       perPage: 50,
@@ -110,11 +118,17 @@ const app = new Vue({// eslint-disable-line
         buySize: item => {
           return `<span title="#${item.buyOrderId}">${item.buySize.toFixed(8)} BTC</span>`
         },
+        toBuy: item => {
+          return `${item.toBuy.toFixed(2)} PLN`
+        },
         sellPrice: item => {
           return `${item.sellPrice.toFixed(2)} PLN`
         },
         sellValue: item => {
           return `${item.sellValue.toFixed(2)} PLN`
+        },
+        toSell: item => {
+          return `${item.toSell.toFixed(2)} PLN`
         },
         sellSize: item => {
           return `<span title="#${item.sellOrderId}">${item.sellSize.toFixed(8)} BTC</span>`
