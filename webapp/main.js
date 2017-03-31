@@ -114,6 +114,10 @@ const app = new Vue({// eslint-disable-line
       perPage: 50,
       dateFormat: 'YYYY-MM-DD HH:mm',
       dateColumns: ['dateCreated', 'dateFinished'],
+      orderBy: {
+        column: 'status',
+        ascending: true
+      },
       headings: {
         buyPrice: 'Buy Price',
         buyValue: 'Buy Value',
