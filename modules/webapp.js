@@ -63,7 +63,7 @@ class WebApp {
       })
     })
 
-    this.app.get('/cancel-order/:buyOrderId', function (req, res) {
+    this.app.get('/cancel-order/:buyOrderId', (req, res) => {
       const buyOrderId = req.params.buyOrderId
       Order.findOne({
         buyOrderId,
