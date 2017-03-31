@@ -1,4 +1,4 @@
-/* globals Vue, moment, fetch, VueTables */
+/* globals Vue, moment, fetch, VueTables, window */
 Vue.use(VueTables.client, {
   compileTemplates: true,
   filterByColumn: true,
@@ -9,7 +9,7 @@ Vue.use(VueTables.client, {
     showDropdowns: true
   }
 })
-const API_URL = '//localhost:4000/'
+const API_URL = `//${window.location.host}/`
 
 const app = new Vue({// eslint-disable-line
   el: '#app',
