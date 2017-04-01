@@ -23,9 +23,12 @@
           <ul>
             <li>Sell Price: <strong>{{ bitBay.ask.toFixed(2) + ' PLN' }}</strong></li>
             <li>Buy Price: <strong>{{ bitBay.bid.toFixed(2) + ' PLN' }}</strong></li>
-            <li>Average: <strong>{{ bitBay.average.toFixed(2) + ' PLN' }}</strong></li>
+            <li>VWAP: <strong>{{ bitBay.vwap.toFixed(2) + ' PLN' }}</strong></li>
             <li>Max: <strong>{{ bitBay.max.toFixed(2) + ' PLN' }}</strong></li>
             <li>Min: <strong>{{ bitBay.min.toFixed(2) + ' PLN' }}</strong></li>
+            <li>
+              Volatility: <strong>{{ volatility.toFixed(2) }}%</strong>
+            </li>
           </ul>
         </div>
       </div>

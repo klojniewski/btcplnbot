@@ -148,6 +148,15 @@ class Bitbay {
         this.Logger.error(`Error when fetching ticker ${error}`)
       })
   }
+  getTicker () {
+    return axios.get(Env.TICKER_URL)
+      .then(function (response) {
+        return response
+      })
+      .catch(error => {
+        this.Logger.error(`Error when fetching ticker ${error}`)
+      })
+  }
   createBTCSellOrder (order) {
     const type = 'sell'
     const currency = 'BTC'

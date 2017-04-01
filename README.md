@@ -31,10 +31,17 @@ Simple trading bot to BitBay.net
 - extract front & backend from webapp
 - use static file server
 - move Math.floor(Date.now() / 1000) to utils.js
-- add integration tests
+- add integration tests:
+-- create order
+-- cancel order
+-- get history
+-- get info
+- support for TESTING API credimentials
 - change current functions into pure functions (ex. remove Env injections)
 - add formatting helpers in webapp (PLN, BTC)
 - change getPLNBalance into getInfo method
 - use fee balue from getInfo API endpoint
 - ./main.css is not loading in webapp
 - [webapp] ability to cancel specific BTC Buy orders
+- ROI calculation based on deposits history
+- tests for Configuration (config/env.js)

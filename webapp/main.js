@@ -11,7 +11,7 @@ Vue.use(VueTables.client, {
 })
 const API_URL = `//${window.location.host}/`
 
-const app = new Vue({// eslint-disable-line
+const webapp = new Vue({// eslint-disable-line
   el: '#app',
   ready: function () {
     this.fetchData()
@@ -31,20 +31,21 @@ const app = new Vue({// eslint-disable-line
 
         ratesResponse.json().then(data => {
           this.bitBay = data
+          this.calculateVolatility()
 
           ordersResponse.json().then(this.parseOrders)
           infoResponse.json().then(this.parseInfo)
         })
       })
     },
-    fetchRates: function () {
-      return fetch('https://bitbay.net/API/Public/BTCPLN/ticker.json')
-    },
-    fetchOrders: function () {
-      return fetch(API_URL + 'get-all')
-    },
-    fetchInfo: function () {
-      return fetch(API_URL + 'get-info')
+    fetchRates: () => fetch('https://bitbay.net/API/Public/BTCPLN/ticker.json'),
+    fetchOrders: () => fetch(API_URL + 'get-all'),
+    fetchInfo: () => fetch(API_URL + 'get-info'),
+    calculateVolatility () {
+      const minVolatility = 100 * (this.bitBay.vwap - this.bitBay.min) / this.bitBay.vwap
+      const maxVolatility = 100 * (this.bitBay.max - this.bitBay.vwap) / this.bitBay.vwap
+
+      this.volatility = minVolatility + maxVolatility
     },
     parseOrders: function (data) {
       let profit = 0
@@ -108,6 +109,7 @@ const app = new Vue({// eslint-disable-line
     finishedCount: 0,
     canceledCount: 0,
     invested: 0,
+    volatility: 0,
     roi: 0,
     columns: ['buyPrice', 'toBuy', 'buySize', 'buyValue', 'sellPrice', 'toSell', 'sellSize', 'sellValue', 'estimatedProfit', 'status', 'dateCreated', 'dateFinished', 'delete'],
     options: {
@@ -155,7 +157,7 @@ const app = new Vue({// eslint-disable-line
           return `${item.estimatedProfit.toFixed(2)} PLN`
         },
         delete: item => {
-          return `<a href='javascript:void(0);' @click='$parent.deleteMe(${item.buyOrderId})'><i class='glyphicon glyphicon-erase'></i></a>`
+          return `<a href='javascript:void(0);' @click='$parent.deleteMe(${item.buyOrderId})'><i class='glyphicon glyphicon-remove-circle'></i></a>`
         }
       },
       listColumns: {

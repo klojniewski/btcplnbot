@@ -33,6 +33,19 @@ class OrderCreator {
       messages
     }
   }
+  getOrdersToCreateByStartPrice (startPrice, available, amountPerOrder, orderCount, sellMargin) {
+    const orders = []
+    const messages = this.getMessages(available, orderCount, amountPerOrder, startPrice)
+    for (let i = 0; i < orderCount; i++) {
+      const buyPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
+      const buySize = Number(amountPerOrder / buyPrice).toFixed(8)
+      orders.push(this.createOrder(buyPrice, buySize, sellMargin))
+    }
+    return {
+      orders,
+      messages
+    }
+  }
   getMessages (available, orderCount, amountPerOrder, startPrice) {
     const messages = []
     messages.push(`Have ${available} PLN to invest.`)
@@ -40,7 +53,7 @@ class OrderCreator {
     messages.push(`BTC Buy Orders will start from ${startPrice} PLN`)
     return messages
   }
-  createOrder (buyPrice, buySize) {
+  createOrder (buyPrice, buySize, sellMargin = false) {
     const id = uuidV1()
 
     const buyOrderId = 0
@@ -48,7 +61,7 @@ class OrderCreator {
     const buyValue = Number(buySize * buyPrice).toFixed(8)
 
     const sellOrderId = 0
-    const sellPrice = this.Calculator.getSellPrice(buyPrice)
+    const sellPrice = this.Calculator.getSellPrice(buyPrice, sellMargin)
     const sellSize = buySize - buyCommision
     const sellCommision = this.Calculator.getSellCommision(sellPrice * sellSize)
     const sellValue = Number(sellSize * sellPrice).toFixed(8)

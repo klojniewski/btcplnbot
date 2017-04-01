@@ -5,8 +5,11 @@ class Calculator {
     this.commissionMaker = Env.COMMISION
     this.sellPriceMargin = Env.SELL_PRICE_MARGIN
   }
-  getSellPrice (buyPrice) {
-    return buyPrice + this.sellPriceMargin
+  getStartPrice (buyPrice, volatility) {
+    return buyPrice - ((volatility / 4.2) * buyPrice)
+  }
+  getSellPrice (buyPrice, sellMargin) {
+    return buyPrice + (sellMargin || this.sellPriceMargin)
   }
   getBuyCommision (btcSize) {
     return btcSize * this.commissionMaker / 100
@@ -16,6 +19,12 @@ class Calculator {
   }
   getProfit (buyValue, sellValue) {
     return sellValue - this.getSellCommision(sellValue) - buyValue
+  }
+  getVolatility (min, max, vwap) {
+    const minVolatility = (vwap - min) / vwap
+    const maxVolatility = (max - vwap) / vwap
+
+    return minVolatility + maxVolatility
   }
 }
 module.exports = Calculator

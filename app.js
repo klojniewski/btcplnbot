@@ -60,7 +60,7 @@ class App {
             const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreate(buyPrice, this.available, amountPerOrder, orderCount)
             Logger.printMessages(messages, 'buy')
             buyOrdersToCreate.forEach((orderToCreate, iterationNo) => {
-              if (orderToCreate.estimatedProfit > 0) {
+              if (orderToCreate.estimatedProfit > Env.MINIMUM_PROFIT) {
                 setTimeout(() => {
                   this.Bitbay.createBTCBuyOrder(orderToCreate).then(resp => {
                     if (resp.order_id) {

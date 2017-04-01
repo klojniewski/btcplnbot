@@ -4,6 +4,8 @@ const express = require('express')
 const path = require('path')
 const Order = require('../models/order')
 const Bitbay = require('../modules/bitbay')
+const Calculator = require('../modules/calculator')
+const Creator = require('../modules/order-creator')
 
 class WebApp {
   constructor () {
@@ -11,6 +13,8 @@ class WebApp {
     Mongoose.Promise = global.Promise
 
     this.Bitbay = new Bitbay()
+    this.Calculator = new Calculator()
+    this.Creator = new Creator()
   }
   run () {
     const pathPrefix = path.join(`${__dirname}/../webapp/`)
@@ -30,9 +34,41 @@ class WebApp {
       res.sendFile(pathPrefix + 'main.js')
     })
 
+    this.app.get('/main.css', function (req, res) {
+      res.sendFile(pathPrefix + 'main.css')
+    })
+
     this.app.get('/get-info', (req, res) => {
       this.Bitbay.getInfo().then(response => {
         res.json(response)
+      })
+    })
+
+    this.app.get('/calculate', (req, res) => {
+      const ticker = this.Bitbay.getTicker().then(resp => {// eslint-disable-line
+        const data = resp.data
+        const volatility = this.Calculator.getVolatility(data.min, data.max, data.vwap)
+
+        this.Bitbay.getBuyPrice().then(buyPrice => {
+          const startPrice = this.Calculator.getStartPrice(buyPrice, volatility)
+          const priceMargin = buyPrice - startPrice
+
+          const sellMargin = priceMargin
+          this.available = 100
+
+          const { amountPerOrder, orderCount } = this.Creator.getAmountPerOrder(this.available, Env.ORDER_COUNT)
+          const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreateByStartPrice(startPrice, this.available, amountPerOrder, orderCount, sellMargin)
+
+          res.json({
+            priceMargin,
+            buyPrice,
+            startPrice,
+            volatility,
+            data: resp.data,
+            buyOrdersToCreate,
+            messages
+          })
+        })
       })
     })
 
