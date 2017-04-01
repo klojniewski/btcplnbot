@@ -23,6 +23,11 @@
     "test",
     "lint"
   ],
+  "standard": {
+    "ignore": [
+      "webapp/vendor/"
+    ]
+  },
   "homepage": "https://github.com/klojniewski/btcplnbot#readme",
   "devDependencies": {
     "ava": "^0.18.2",

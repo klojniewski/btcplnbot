@@ -34,6 +34,10 @@ class WebApp {
       res.sendFile(pathPrefix + 'main.js')
     })
 
+    this.app.get('/vendor/fetch.js', function (req, res) {
+      res.sendFile(pathPrefix + 'vendor/fetch.js')
+    })
+
     this.app.get('/main.css', function (req, res) {
       res.sendFile(pathPrefix + 'main.css')
     })
