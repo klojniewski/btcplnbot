@@ -93,10 +93,7 @@ class Bitbay {
     })
   }
   getInfo () {
-    const currency = 'PLN'
-    const data = Object.assign({}, this.getBase('info'), {
-      currency
-    })
+    const data = Object.assign({}, this.getBase('info'))
     const postQueryString = queryString.stringify(data)
 
     return axios.post(Env.API_URL, postQueryString, {

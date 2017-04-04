@@ -82,9 +82,11 @@ const webapp = new Vue({// eslint-disable-line
       this.canceledCount = canceledCount
     },
     parseInfo: function (data) {
-      const invested = data.balances.PLN.locked
-      this.invested = Number(invested).toFixed(2) + ' PLN'
-      this.roi = Number(this.profit / invested * 100).toFixed(2) + '%'
+      const investedPLN = parseFloat(data.balances.PLN.locked)
+      const investedBTC = parseFloat(data.balances.BTC.locked)
+      const investedTotal = investedPLN + investedBTC * this.bitBay.bid
+      this.invested = Number(investedTotal).toFixed(2) + ' PLN'
+      this.roi = Number(this.profit / investedTotal * 100).toFixed(2) + '%'
     },
     deleteMe: function (buyOrderId) {
       if (confirm('Are you sure?' + buyOrderId)) {
