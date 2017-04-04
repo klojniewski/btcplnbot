@@ -85,8 +85,13 @@ const webapp = new Vue({// eslint-disable-line
       const investedPLN = parseFloat(data.balances.PLN.locked)
       const investedBTC = parseFloat(data.balances.BTC.locked)
       const investedTotal = investedPLN + investedBTC * this.bitBay.bid
+      const totalRoi = this.profit / investedTotal * 100
+      const timeOfInvestment = moment().diff('2017-03-01', 'days', true)
+      const dailyRoi = totalRoi / timeOfInvestment
+
       this.invested = Number(investedTotal).toFixed(2) + ' PLN'
-      this.roi = Number(this.profit / investedTotal * 100).toFixed(2) + '%'
+      this.roi = Number(totalRoi).toFixed(2) + '%'
+      this.yearRoi = Number(dailyRoi * 365).toFixed(2) + '%'
     },
     deleteMe: function (buyOrderId) {
       if (confirm('Are you sure?' + buyOrderId)) {
@@ -113,6 +118,7 @@ const webapp = new Vue({// eslint-disable-line
     invested: 0,
     volatility: 0,
     roi: 0,
+    yearRoi: 0,
     columns: ['buyPrice', 'toBuy', 'buySize', 'buyValue', 'sellPrice', 'toSell', 'sellSize', 'sellValue', 'estimatedProfit', 'status', 'dateCreated', 'dateFinished', 'delete'],
     options: {
       perPage: 50,
