@@ -17,7 +17,9 @@ const orderSchema = mongoose.Schema({
   estimatedProfit: Number,
   status: {type: Number, default: Env.STATUS_NEW},
   dateCreated: Number,
-  dateFinished: Number
+  dateFinished: Number,
+  apiResponseBuy: Object,
+  apiResponseSell: Object
 })
 
 orderSchema.statics.findByStatusId = function (statusId, callback) {

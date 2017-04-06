@@ -33,6 +33,12 @@ class OrderChecker {
   checkIfOrderIsInActive (inActiveOrders, orderId) {
     return inActiveOrders.some(order => order.order_id === orderId)
   }
+  getInactiveOrder (inActiveOrders, orderId) {
+    const boughtOrder = inActiveOrders.filter(inActiveOrder => {
+      return orderId === inActiveOrder.order_id
+    })
+    return boughtOrder[0]
+  }
 }
 
 module.exports = OrderChecker
