@@ -49,8 +49,7 @@ class WebApp {
     })
 
     this.app.get('/calculate', (req, res) => {
-      const ticker = this.Bitbay.getTicker().then(resp => {// eslint-disable-line
-        const data = resp.data
+      const ticker = this.Bitbay.getTicker().then(data => {// eslint-disable-line
         const volatility = this.Calculator.getVolatility(data.min, data.max, data.vwap)
 
         this.Bitbay.getBuyPrice().then(buyPrice => {
@@ -68,7 +67,7 @@ class WebApp {
             buyPrice,
             startPrice,
             volatility,
-            data: resp.data,
+            data,
             buyOrdersToCreate,
             messages
           })

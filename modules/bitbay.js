@@ -148,7 +148,7 @@ class Bitbay {
   getTicker () {
     return axios.get(Env.TICKER_URL)
       .then(function (response) {
-        return response
+        return response.data
       })
       .catch(error => {
         this.Logger.error(`Error when fetching ticker ${error}`)
