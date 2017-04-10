@@ -37,7 +37,7 @@ class OrderChecker {
     const boughtOrder = inActiveOrders.filter(inActiveOrder => {
       return orderId === inActiveOrder.order_id
     })
-    return boughtOrder[0]
+    return boughtOrder.length ? boughtOrder[0] : false
   }
 }
 

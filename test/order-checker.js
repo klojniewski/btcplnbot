@@ -93,3 +93,9 @@ test('checkIfOrderIsInActive needs to return true or false', t => {
   t.is(Checker.checkIfOrderIsInActive(inActiveOrdersMock, inActiveOrderId), true)
   t.is(Checker.checkIfOrderIsInActive(inActiveOrdersMock, notPresentOrderId), false)
 })
+
+test('check if getInactiveOrder returns an order', t => {
+  const inActiveOrderId = 70847540
+
+  t.is(typeof Checker.getInactiveOrder(inActiveOrdersMock, inActiveOrderId), 'object')
+})
