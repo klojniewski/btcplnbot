@@ -11,14 +11,14 @@ class Calculator {
   getSellPrice (buyPrice, sellMargin) {
     return buyPrice + (sellMargin || this.sellPriceMargin)
   }
-  getBuyCommision (btcSize) {
-    return btcSize * this.commissionMaker / 100
+  getBuyCommision (btcSize, fee = false) {
+    return btcSize * (fee || this.commissionMaker) / 100
   }
-  getSellCommision (plnValue) {
-    return plnValue * this.commissionMaker / 100
+  getSellCommision (plnValue, fee = false) {
+    return plnValue * (fee || this.commissionMaker) / 100
   }
-  getProfit (buyValue, sellValue) {
-    return sellValue - this.getSellCommision(sellValue) - buyValue
+  getProfit (buyValue, sellValue, fee = false) {
+    return sellValue - this.getSellCommision(sellValue, fee) - buyValue
   }
   getVolatility (min, max, vwap) {
     const minVolatility = (vwap - min) / vwap

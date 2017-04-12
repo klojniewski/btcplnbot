@@ -2,7 +2,6 @@ const Env = require('./config/env')
 const Mongoose = require('mongoose')
 const Log = require('./modules/log')
 const Bitbay = require('./modules/bitbay')
-const Calculator = require('./modules/calculator')
 const Order = require('./models/order')
 const OrderCreator = require('./modules/order-creator')
 const OrderChecker = require('./modules/order-checker')
@@ -18,7 +17,6 @@ class App {
     Logger.bold('Bot instance created.')
   }
   init () {
-    this.Calculator = new Calculator()
     this.Creator = new OrderCreator()
     this.earnMoney()
   }
@@ -49,10 +47,11 @@ class App {
       return
     }
     Promise.all([
-      this.Bitbay.getPLNBalance(),
+      this.Bitbay.getInfo(),
       Order.findActive()
     ]).then(values => {
-      const [ balance, activeOrders ] = values
+      const [ accountInfo, activeOrders ] = values
+      const balance = accountInfo.balances.PLN
       this.available = balance.available - Env.MONEY_LEFT
       if (activeOrders.length < Env.ACTIVE_ORDERS_LIMIT) {
         if (this.available > Env.MINIMUM_ORDER_VALUE) {
@@ -60,7 +59,7 @@ class App {
           this.Bitbay.getBuyPrice().then(buyPrice => {
             // create orders
             const { amountPerOrder, orderCount } = this.Creator.getAmountPerOrder(this.available, Env.ORDER_COUNT)
-            const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreate(buyPrice, this.available, amountPerOrder, orderCount)
+            const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreate(buyPrice, this.available, amountPerOrder, orderCount, accountInfo.fee)
             Logger.printMessages(messages, 'buy')
             buyOrdersToCreate.forEach((orderToCreate, iterationNo) => {
               if (orderToCreate.estimatedProfit > Env.MINIMUM_PROFIT) {

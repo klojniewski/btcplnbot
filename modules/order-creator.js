@@ -19,27 +19,27 @@ class OrderCreator {
       orderCount
     }
   }
-  getOrdersToCreate (currentPrice, available, amountPerOrder, orderCount) {
+  getOrdersToCreate (currentPrice, available, amountPerOrder, orderCount, fee) {
     const startPrice = currentPrice - Env.START_PRICE_MARGIN
     const orders = []
     const messages = this.getMessages(available, orderCount, amountPerOrder, startPrice)
     for (let i = 0; i < orderCount; i++) {
       const buyPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
       const buySize = Number(amountPerOrder / buyPrice).toFixed(8)
-      orders.push(this.createOrder(buyPrice, buySize))
+      orders.push(this.createOrder(buyPrice, buySize, false, fee))
     }
     return {
       orders,
       messages
     }
   }
-  getOrdersToCreateByStartPrice (startPrice, available, amountPerOrder, orderCount, sellMargin) {
+  getOrdersToCreateByStartPrice (startPrice, available, amountPerOrder, orderCount, sellMargin, fee) {
     const orders = []
     const messages = this.getMessages(available, orderCount, amountPerOrder, startPrice)
     for (let i = 0; i < orderCount; i++) {
       const buyPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
       const buySize = Number(amountPerOrder / buyPrice).toFixed(8)
-      orders.push(this.createOrder(buyPrice, buySize, sellMargin))
+      orders.push(this.createOrder(buyPrice, buySize, sellMargin, fee))
     }
     return {
       orders,
@@ -53,20 +53,20 @@ class OrderCreator {
     messages.push(`BTC Buy Orders will start from ${startPrice} PLN`)
     return messages
   }
-  createOrder (buyPrice, buySize, sellMargin = false) {
+  createOrder (buyPrice, buySize, sellMargin = false, fee = false) {
     const id = uuidV1()
 
     const buyOrderId = 0
-    const buyCommision = Number(this.Calculator.getBuyCommision(buySize)).toFixed(8)
+    const buyCommision = Number(this.Calculator.getBuyCommision(buySize, fee)).toFixed(8)
     const buyValue = Number(buySize * buyPrice).toFixed(8)
 
     const sellOrderId = 0
     const sellPrice = this.Calculator.getSellPrice(buyPrice, sellMargin)
     const sellSize = buySize - buyCommision
-    const sellCommision = this.Calculator.getSellCommision(sellPrice * sellSize)
+    const sellCommision = this.Calculator.getSellCommision(sellPrice * sellSize, fee)
     const sellValue = Number(sellSize * sellPrice).toFixed(8)
 
-    const estimatedProfit = this.Calculator.getProfit(buyValue, sellValue)
+    const estimatedProfit = this.Calculator.getProfit(buyValue, sellValue, fee)
 
     return {
       id,
@@ -84,7 +84,7 @@ class OrderCreator {
       dateCreated: Math.floor(Date.now() / 1000),
       dateFinished: null,
       status: Env.STATUS_NEW,
-      commisionRate: Number(Env.COMMISION)
+      commisionRate: Number(fee || Env.COMMISION)
     }
   }
 }
