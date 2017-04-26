@@ -1,6 +1,6 @@
-a# btcplnbot
+# Bitbay BTC Volatility Bot
 
-Simple trading bot to BitBay.net
+Simple volatility trading bot for BitBay.net
 
 ## System requirements
 
@@ -42,6 +42,5 @@ Simple trading bot to BitBay.net
 - change getPLNBalance into getInfo method
 - use fee balue from getInfo API endpoint
 - ./main.css is not loading in webapp
-- [webapp] ability to cancel specific BTC Buy orders
 - ROI calculation based on deposits history
 - tests for Configuration (config/env.js)
