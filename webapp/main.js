@@ -31,7 +31,6 @@ const webapp = new Vue({// eslint-disable-line
 
         ratesResponse.json().then(data => {
           this.bitBay = data
-          this.calculateVolatility()
 
           ordersResponse.json().then(this.parseOrders)
           infoResponse.json().then(this.parseInfo)
@@ -41,12 +40,6 @@ const webapp = new Vue({// eslint-disable-line
     fetchRates: () => fetch('https://bitbay.net/API/Public/BTCPLN/ticker.json'),
     fetchOrders: () => fetch(API_URL + 'get-all'),
     fetchInfo: () => fetch(API_URL + 'get-info'),
-    calculateVolatility () {
-      const minVolatility = 100 * (this.bitBay.vwap - this.bitBay.min) / this.bitBay.vwap
-      const maxVolatility = 100 * (this.bitBay.max - this.bitBay.vwap) / this.bitBay.vwap
-
-      this.volatility = minVolatility + maxVolatility
-    },
     parseOrders: function (data) {
       let profit = 0
       let activeCount = 0
@@ -94,7 +87,7 @@ const webapp = new Vue({// eslint-disable-line
       this.yearRoi = Number(dailyRoi * 365).toFixed(2) + '%'
     },
     deleteMe: function (buyOrderId) {
-      if (confirm('Are you sure?' + buyOrderId)) {
+      if (confirm('Are you sure?')) {
         fetch(API_URL + 'cancel-order/' + buyOrderId).then(resp => {
           resp.json().then(canceledOrder => {
             if (canceledOrder) {
@@ -107,6 +100,17 @@ const webapp = new Vue({// eslint-disable-line
           })
         })
       }
+    }
+  },
+  computed: {
+    diff: function () {
+      return this.bitBay.max - this.bitBay.min
+    },
+    volatility: function () {
+      const minVolatility = 100 * (this.bitBay.vwap - this.bitBay.min) / this.bitBay.vwap
+      const maxVolatility = 100 * (this.bitBay.max - this.bitBay.vwap) / this.bitBay.vwap
+
+      return minVolatility + maxVolatility
     }
   },
   data: {
