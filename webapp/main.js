@@ -46,6 +46,7 @@ const webapp = new Vue({// eslint-disable-line
       let toBeSoldCount = 0
       let finishedCount = 0
       let canceledCount = 0
+      let inactiveCount = 0
       data.map(object => {
         object.dateCreated = moment(new Date(Number(object.dateCreated) * 1000))
         object.dateFinished = moment(new Date(Number(object.dateFinished) * 1000))
@@ -62,6 +63,9 @@ const webapp = new Vue({// eslint-disable-line
         if (object.status === 5) {
           canceledCount++
         }
+        if (object.status === 6 || object.status === 7) {
+          inactiveCount++
+        }
         object.toBuy = this.bitBay.ask - object.buyPrice
         object.toSell = object.sellPrice - this.bitBay.bid
         return object
@@ -73,6 +77,7 @@ const webapp = new Vue({// eslint-disable-line
       this.toBeSoldCount = toBeSoldCount
       this.finishedCount = finishedCount
       this.canceledCount = canceledCount
+      this.inactiveCount = inactiveCount
     },
     parseInfo: function (data) {
       const investedPLN = parseFloat(data.balances.PLN.locked)
@@ -119,6 +124,7 @@ const webapp = new Vue({// eslint-disable-line
     toBeSoldCount: 0,
     finishedCount: 0,
     canceledCount: 0,
+    inactiveCount: 0,
     invested: 0,
     volatility: 0,
     roi: 0,
@@ -185,6 +191,12 @@ const webapp = new Vue({// eslint-disable-line
         }, {
           id: 5,
           text: 'Canceled'
+        }, {
+          id: 6,
+          text: 'Inactive Buy'
+        }, {
+          id: 7,
+          text: 'Inactive Sell'
         }]
       }
     },
