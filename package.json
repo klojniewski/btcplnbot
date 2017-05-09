@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
+    "webapp": "node webapp.js",
     "test": "ava",
     "lint": "standard",
     "delete-new": "node delete-new-orders.js",

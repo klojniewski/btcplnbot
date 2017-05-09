@@ -21,9 +21,13 @@ Simple volatility trading bot for BitBay.net
 
 `npm start`
 
+## Running Tests
+
+`npm test`
+
 ## Running Webapp
 
-`node webapp.js`
+`npm run webapp`
 
 ## Todo
 
