@@ -11,9 +11,11 @@ Simple volatility trading bot for BitBay.net
 ## Installation
 
 1. Rename `config/env.js-example` to `config/env.js`.
-2. Create empty MongoDB database.
-3. Change API keys, Exchange commision value and database link in `config/env.jg` file.
-4. Run `npm install`.
+2. Update your envirionment configuration in `config/env.js`. If production change the `isDev` flag to false.
+3. Create empty MongoDB database.
+4. Import `orders` collection from the backup (db/orders.json). https://docs.mongodb.com/manual/reference/program/mongoexport/
+5. Change API keys, Exchange commision value and database link in `config/env.jg` file.
+6. Run `npm install`.
 
 ## Running
 
