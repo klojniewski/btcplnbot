@@ -12,7 +12,7 @@ class App {
   constructor () {
     Mongoose.connect(Env.MONGO_CONNECTION_STRING)
     Mongoose.Promise = global.Promise
-    this.Bitbay = new Bitbay()
+    this.Bitbay = new Bitbay(Logger)
     this.Checker = new OrderChecker(this.Bitbay)
     Logger.bold('Bot instance created.')
   }
