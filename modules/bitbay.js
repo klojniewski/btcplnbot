@@ -29,9 +29,7 @@ class Bitbay {
     return axios.post(Env.API_URL, postQueryString, {
       headers: this.getApiHeaders(postQueryString)
     })
-    .then(({data}) => {
-      return data
-    })
+    .then(({data}) => data)
     .catch(error => {
       this.Logger.error(`Error when fetching account info ${error}`)
     })
@@ -45,9 +43,7 @@ class Bitbay {
     return axios.post(Env.API_URL, postQueryString, {
       headers: this.getApiHeaders(postQueryString)
     })
-    .then(({data}) => {
-      return data
-    })
+    .then(({data}) => data)
     .catch(error => {
       this.Logger.error(`Error when canceling the order ${error}`)
     })
@@ -62,9 +58,7 @@ class Bitbay {
     return axios.post(Env.API_URL, postQueryString, {
       headers: this.getApiHeaders(postQueryString)
     })
-    .then(({data}) => {
-      return data
-    })
+    .then(({data}) => data)
     .catch(error => {
       this.Logger.error(`Error when fetching account info ${error}`)
     })
@@ -80,9 +74,7 @@ class Bitbay {
     return axios.post(Env.API_URL, postQueryString, {
       headers: this.getApiHeaders(postQueryString)
     })
-    .then(({data}) => {
-      return data
-    })
+    .then(({data}) => data)
     .catch(error => {
       this.Logger.error(`Error when fetching account info ${error}`)
     })
@@ -167,9 +159,7 @@ class Bitbay {
   }
   getTicker () {
     return axios.get(Env.TICKER_URL)
-      .then(({data}) => {
-        return data
-      })
+      .then(({data}) => data)
       .catch(error => {
         this.Logger.error(`Error when fetching ticker ${error}`)
       })
