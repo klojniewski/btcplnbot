@@ -72,9 +72,18 @@ test('getOrders needs to return at least 1 order', t => {
   let ordersProfit = 0
   const available = 12345
   const currentPrice = 1234
+  const {
+    amountPerOrder,
+    orderCount
+  } = Creator.getAmountPerOrder(available, Env.ORDER_COUNT)
+  const orderParams = {
+    currentPrice,
+    available,
+    amountPerOrder,
+    orderCount
+  }
 
-  const { amountPerOrder, orderCount } = Creator.getAmountPerOrder(available, Env.ORDER_COUNT)
-  const ordersToCreate = Creator.getOrdersToCreate(currentPrice, available, amountPerOrder, orderCount)
+  const ordersToCreate = Creator.getOrdersToCreate(orderParams)
 
   const { orders, messages } = ordersToCreate
 
@@ -92,9 +101,15 @@ test('getOrders needs to return at least 1 order', t => {
 test('getOrders needs to return orders with buyValue', t => {
   const available = 12345
   const currentPrice = 1234
-
   const { amountPerOrder, orderCount } = Creator.getAmountPerOrder(available, Env.ORDER_COUNT)
-  const ordersToCreate = Creator.getOrdersToCreate(currentPrice, available, amountPerOrder, orderCount)
+  const orderParams = {
+    currentPrice,
+    available,
+    amountPerOrder,
+    orderCount
+  }
+
+  const ordersToCreate = Creator.getOrdersToCreate(orderParams)
 
   const { orders, messages } = ordersToCreate
 
@@ -112,7 +127,13 @@ test('getMessages needs to return an array', t => {
   const available = 10000
   const currentPrice = 1234
   const { amountPerOrder, orderCount } = Creator.getAmountPerOrder(available, Env.ORDER_COUNT)
-  const messages = Creator.getMessages(currentPrice, available, amountPerOrder, orderCount)
+  const orderParams = {
+    available,
+    orderCount,
+    amountPerOrder,
+    currentPrice
+  }
+  const messages = Creator.getMessages(orderParams)
 
   t.true(messages instanceof Array, true)
 })
