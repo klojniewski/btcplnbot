@@ -4,7 +4,7 @@ const Bitbay = require('../modules/bitbay')
 const Env = require('../config/env')
 const Mongoose = require('mongoose')
 const mockup = require('../db/mock')
-var nock = require('nock')
+const nock = require('nock')
 
 const BitbayInstance = new Bitbay()
 const Checker = new OrderChecker(BitbayInstance)
