@@ -18,11 +18,11 @@ const {
 Mongoose.connect(Env.MONGO_CONNECTION_STRING)
 Mongoose.Promise = global.Promise
 
-nock('http://example.com')
+const mockEndpoint = 'http://example.com'
+
+nock(mockEndpoint)
   .post('/')
   .reply(200, shuffleOrdersMock)
-
-const mockEndpoint = 'http://example.com'
 
 test('getOrders needs to return 3 objects', t => {
   return Checker.getOrders(Env.STATUS_NEW, mockEndpoint)
