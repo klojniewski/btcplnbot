@@ -1,8 +1,10 @@
 const test = require('ava')
 const OrderChecker = require('../modules/order-checker')
+const Bitbay = require('../modules/bitbay')
 const Env = require('../config/env')
 const Mongoose = require('mongoose')
-const Checker = new OrderChecker()
+const BitbayInstance = new Bitbay()
+const Checker = new OrderChecker(BitbayInstance)
 
 Mongoose.connect(Env.MONGO_CONNECTION_STRING)
 Mongoose.Promise = global.Promise

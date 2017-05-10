@@ -8,7 +8,7 @@ class Calculator {
   getStartPrice (buyPrice, volatility) {
     return buyPrice - ((volatility / 4.2) * buyPrice)
   }
-  getSellPrice (buyPrice, sellMargin) {
+  getSellPrice (buyPrice, sellMargin = null) {
     return buyPrice + (sellMargin || this.sellPriceMargin)
   }
   getBuyCommision (btcSize, fee = false) {

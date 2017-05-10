@@ -1,9 +1,8 @@
 const Order = require('../models/order')
-const Bitbay = require('../modules/bitbay')
 
 class OrderChecker {
-  constructor () {
-    this.Bitbay = new Bitbay()
+  constructor (bitbay) {
+    this.Bitbay = bitbay
   }
   getOrders (statusId) {
     return Promise.all([

@@ -139,19 +139,14 @@ class Bitbay {
       this.Logger.error(`Error when fetching user PLN balance: ${error}`)
     })
   }
-  getBuyPrice () {
+  getPrice (type) {
     return axios.get(Env.TICKER_URL)
       .then(({data}) => {
-        return Number(data.ask)
-      })
-      .catch(error => {
-        this.Logger.error(`Error when fetching ticker ${error}`)
-      })
-  }
-  getSellPrice () {
-    return axios.get(Env.TICKER_URL)
-      .then(({data}) => {
-        return Number(data.bid)
+        return type === 'buy'
+          ? Number(data.ask)
+          : type === 'sell'
+            ? Number(data.bid)
+            : null
       })
       .catch(error => {
         this.Logger.error(`Error when fetching ticker ${error}`)
