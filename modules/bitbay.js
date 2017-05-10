@@ -146,7 +146,7 @@ class Bitbay {
           ? Number(data.ask)
           : type === 'sell'
             ? Number(data.bid)
-          : null
+            : null
       })
       .catch(error => {
         this.Logger.error(`Error when fetching ticker ${error}`)
