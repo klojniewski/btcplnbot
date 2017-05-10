@@ -52,7 +52,7 @@ class WebApp {
       const ticker = this.Bitbay.getTicker().then(data => {// eslint-disable-line
         const volatility = this.Calculator.getVolatility(data.min, data.max, data.vwap)
 
-        this.Bitbay.getBuyPrice().then(buyPrice => {
+        this.Bitbay.getPrice('buy').then(buyPrice => {
           const startPrice = this.Calculator.getStartPrice(buyPrice, volatility)
           const priceMargin = buyPrice - startPrice
 

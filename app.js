@@ -56,7 +56,7 @@ class App {
       if (activeOrders.length < Env.ACTIVE_ORDERS_LIMIT) {
         if (this.available > Env.MINIMUM_ORDER_VALUE) {
           // check current price
-          this.Bitbay.getBuyPrice().then(buyPrice => {
+          this.Bitbay.getPrice('buy').then(buyPrice => {
             // create orders
             const { amountPerOrder, orderCount } = this.Creator.getAmountPerOrder(this.available, Env.ORDER_COUNT)
             const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreate(buyPrice, this.available, amountPerOrder, orderCount, accountInfo.fee)
@@ -94,7 +94,7 @@ class App {
 
     Promise.all([
       this.Checker.getOrders(Env.STATUS_NEW),
-      this.Bitbay.getBuyPrice()
+      this.Bitbay.getPrice('buy')
     ]).then(values => {
       const { activeOrders, inActiveOrders, databaseOrders } = values[0]
       const buyPrice = values[1]
@@ -140,7 +140,7 @@ class App {
 
     Promise.all([
       this.Checker.getOrders(Env.STATUS_TOBESOLD),
-      this.Bitbay.getSellPrice()
+      this.Bitbay.getPrice('sell')
     ]).then(values => {
       const { activeOrders, inActiveOrders, databaseOrders } = values[0]
       const sellPrice = values[1]
