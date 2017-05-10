@@ -4,9 +4,9 @@ class OrderChecker {
   constructor (bitbay) {
     this.Bitbay = bitbay
   }
-  getOrders (statusId) {
+  getOrders (statusId, url = null) {
     return Promise.all([
-      this.Bitbay.getOrders(),
+      this.Bitbay.getOrders(url),
       Order.findByStatusId(statusId)
     ])
     .then(([marketOrders, databaseOrders]) => {
