@@ -9,8 +9,7 @@ class OrderChecker {
       this.Bitbay.getOrders(),
       Order.findByStatusId(statusId)
     ])
-    .then(values => {
-      const [ marketOrders, databaseOrders ] = values
+    .then(([marketOrders, databaseOrders]) => {
       const activeOrders = this.Bitbay.filterActiveOrders(marketOrders)
       const inActiveOrders = this.Bitbay.filterInActiveOrders(marketOrders)
       return {
