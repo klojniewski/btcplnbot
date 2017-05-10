@@ -6,15 +6,16 @@ const Order = require('./models/order')
 const OrderCreator = require('./modules/order-creator')
 const OrderChecker = require('./modules/order-checker')
 const colors = require('colors')// eslint-disable-line
-const Logger = new Log()
 
 class App {
   constructor () {
     Mongoose.connect(Env.MONGO_CONNECTION_STRING)
     Mongoose.Promise = global.Promise
-    this.Bitbay = new Bitbay(Logger)
+    this.Logger = new Log()
+    this.Bitbay = new Bitbay(this.Logger)
     this.Checker = new OrderChecker(this.Bitbay)
-    Logger.bold('Bot instance created.')
+
+    this.Logger.bold('Bot instance created.')
   }
   init () {
     this.Creator = new OrderCreator()
@@ -30,7 +31,7 @@ class App {
     }, 30 * 1000)
     if (Env.IN_LOOP) {
       setTimeout(() => {
-        Logger.bold('Another round.')
+        this.Logger.bold('Another round.')
         this.earnMoney()
       }, 60 * 1000)
     }
@@ -42,7 +43,7 @@ class App {
     }, 5 * 1000)
   }
   createBTCBuyOrders () {
-    Logger.info('Bot Init, getting account informations.')
+    this.Logger.info('Bot Init, getting account informations.')
     if (Env.IS_DEV) {
       return
     }
@@ -60,7 +61,7 @@ class App {
             // create orders
             const { amountPerOrder, orderCount } = this.Creator.getAmountPerOrder(this.available, Env.ORDER_COUNT)
             const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreate(buyPrice, this.available, amountPerOrder, orderCount, accountInfo.fee)
-            Logger.printMessages(messages, 'buy')
+            this.Logger.printMessages(messages, 'buy')
             buyOrdersToCreate.forEach((orderToCreate, iterationNo) => {
               if (orderToCreate.estimatedProfit > Env.MINIMUM_PROFIT) {
                 setTimeout(() => {
@@ -68,29 +69,29 @@ class App {
                     if (resp.order_id) {
                       this.available = this.available - orderToCreate.buyValue
                       orderToCreate.buyOrderId = resp.order_id
-                      Logger.buy(`${iterationNo + 1} / ${orderCount} BTC Buy Order Created ${orderToCreate.buyOrderId}, cash left: ${this.available}.`)
+                      this.Logger.buy(`${iterationNo + 1} / ${orderCount} BTC Buy Order Created ${orderToCreate.buyOrderId}, cash left: ${this.available}.`)
                       Order(orderToCreate).save(error => {
                         if (error) {
-                          Logger.error(`Failed to create BTC Buy Order ${orderToCreate.buyOrderId} with error ${error}.`)
+                          this.Logger.error(`Failed to create BTC Buy Order ${orderToCreate.buyOrderId} with error ${error}.`)
                         }
                       })
                     }
                   })
                 }, iterationNo * Env.API_TIMEOUT)
               } else {
-                Logger.error(`Estimated profit is too low: ${orderToCreate.estimatedProfit}, skipping.`)
+                this.Logger.error(`Estimated profit is too low: ${orderToCreate.estimatedProfit}, skipping.`)
               }
             })
           })
         } else {
           const cash = Number(this.available).toFixed(2)
-          Logger.buy(`Not enough cash to create BTC Buy Orders, current cash: ${cash} PLN.`)
+          this.Logger.buy(`Not enough cash to create BTC Buy Orders, current cash: ${cash} PLN.`)
         }
       }
     })
   }
   checkBTCBuyOrderStatus () {
-    Logger.info(`Check if BTC Buy Order(s) have been made.`)
+    this.Logger.info(`Check if BTC Buy Order(s) have been made.`)
 
     Promise.all([
       this.Checker.getOrders(Env.STATUS_NEW),
@@ -100,9 +101,9 @@ class App {
       const buyPrice = values[1]
       let lostOrders = []
       if (databaseOrders.length) {
-        Logger.info(`Found ${databaseOrders.length} BTC Buy Order(s) to check.`)
+        this.Logger.info(`Found ${databaseOrders.length} BTC Buy Order(s) to check.`)
       } else {
-        Logger.info(`No pending BTC Buy Orders to check.`)
+        this.Logger.info(`No pending BTC Buy Orders to check.`)
         return
       }
       databaseOrders.forEach(databaseOrder => {
@@ -112,15 +113,15 @@ class App {
         const isBought = this.Checker.checkIfOrderIsBought(inActiveOrders, dbOrderId)
 
         if (isBought) {
-          Logger.success(`#${dbOrderId} has been bought! Changing order status.`)
+          this.Logger.success(`#${dbOrderId} has been bought! Changing order status.`)
           if (!Env.IS_DEV) {
             databaseOrder.saveUpdatedStatus(Env.STATUS_BOUGHT)
           }
         } else if (isActive) {
           const priceMargin = Number(databaseOrder.buyPrice - buyPrice).toFixed(2)
-          Logger.info(`#${dbOrderId} is waiting, ${databaseOrder.buyPrice} vs ${buyPrice} (${priceMargin} PLN)`)
+          this.Logger.info(`#${dbOrderId} is waiting, ${databaseOrder.buyPrice} vs ${buyPrice} (${priceMargin} PLN)`)
         } else if (isInActive) {
-          Logger.info(`#${dbOrderId} found as INACTIVE.`)
+          this.Logger.info(`#${dbOrderId} found as INACTIVE.`)
           if (!Env.IS_DEV) {
             databaseOrder.apiResponseBuy = this.Checker.getInactiveOrder(inActiveOrders, dbOrderId)
             databaseOrder.saveUpdatedStatus(Env.STATUS_INACTIVE_BUY)
@@ -131,12 +132,12 @@ class App {
       })
       if (lostOrders.length) {
         const lostOrdersIds = lostOrders.map(order => order.buyOrderId)
-        Logger.error(`Lost ${lostOrders.length} Orders: ${lostOrdersIds}`)
+        this.Logger.error(`Lost ${lostOrders.length} Orders: ${lostOrdersIds}`)
       }
     })
   }
   checkBTCSellOrderStatus () {
-    Logger.sell(`Check if BTC Sell Order(s) have been sold.`)
+    this.Logger.sell(`Check if BTC Sell Order(s) have been sold.`)
 
     Promise.all([
       this.Checker.getOrders(Env.STATUS_TOBESOLD),
@@ -146,9 +147,9 @@ class App {
       const sellPrice = values[1]
       let lostOrders = []
       if (databaseOrders.length) {
-        Logger.sell(`Found ${databaseOrders.length} BTC Sell Order(s) to check.`)
+        this.Logger.sell(`Found ${databaseOrders.length} BTC Sell Order(s) to check.`)
       } else {
-        Logger.sell(`No pending BTC Sell Orders to check.`)
+        this.Logger.sell(`No pending BTC Sell Orders to check.`)
         return
       }
       databaseOrders.forEach(dbOrder => {
@@ -159,16 +160,16 @@ class App {
 
         if (isSold) {
           const profit = Number(dbOrder.estimatedProfit).toFixed(2)
-          Logger.success(`#${dbOrderId} has been sold! Profit: ${profit} PLN. Changing Order status.`)
+          this.Logger.success(`#${dbOrderId} has been sold! Profit: ${profit} PLN. Changing Order status.`)
           if (!Env.IS_DEV) {
             dbOrder.saveUpdatedStatus(Env.STATUS_SOLD)
           }
         } else if (isActive) {
           const priceMargin = Number(dbOrder.sellPrice - sellPrice).toFixed(2)
-          Logger.sell(`#${dbOrderId} is waiting, ${dbOrder.sellPrice} vs ${sellPrice} (${priceMargin} PLN)`)
+          this.Logger.sell(`#${dbOrderId} is waiting, ${dbOrder.sellPrice} vs ${sellPrice} (${priceMargin} PLN)`)
         } else if (isInActive) {
           if (!Env.IS_DEV) {
-            Logger.info(`#${dbOrderId} found as INACTIVE.`)
+            this.Logger.info(`#${dbOrderId} found as INACTIVE.`)
             dbOrder.apiResponseSell = this.Checker.getInactiveOrder(inActiveOrders, dbOrderId)
             dbOrder.saveUpdatedStatus(Env.STATUS_INACTIVE_SELL)
           }
@@ -178,7 +179,7 @@ class App {
       })
       if (lostOrders.length) {
         const lostOrdersIds = lostOrders.map(order => order.sellOrderId)
-        Logger.error(`Lost ${lostOrders.length} BTC Sell Orders: ${lostOrdersIds}`)
+        this.Logger.error(`Lost ${lostOrders.length} BTC Sell Orders: ${lostOrdersIds}`)
       }
     })
   }
@@ -188,16 +189,16 @@ class App {
     }
     Order.findByStatusId(Env.STATUS_BOUGHT).then(orders => {
       if (orders.length) {
-        Logger.info(`Creating ${orders.length} BTC Sell Order(s)`)
+        this.Logger.info(`Creating ${orders.length} BTC Sell Order(s)`)
         orders.forEach((order, iterationNo) => {
           setTimeout(() => {
-            Logger.info(`${iterationNo + 1} / ${orders.length} Created BTC Sell Order #${order.buyOrderId}`)
+            this.Logger.info(`${iterationNo + 1} / ${orders.length} Created BTC Sell Order #${order.buyOrderId}`)
             this.Bitbay.createBTCSellOrder(order).then(response => {
               if (response.order_id) {
                 order.sellOrderId = response.order_id
                 order.saveUpdatedStatus(Env.STATUS_TOBESOLD, error => {
                   if (error) {
-                    Logger.error(`Failed to create BTC Sell order ${response.order_id} with errro ${error}`)
+                    this.Logger.error(`Failed to create BTC Sell order ${response.order_id} with errro ${error}`)
                   }
                 })
               }
@@ -205,7 +206,7 @@ class App {
           }, iterationNo * Env.API_TIMEOUT)
         })
       } else {
-        Logger.info(`No pending BTC Sell Orders to create.`)
+        this.Logger.info(`No pending BTC Sell Orders to create.`)
       }
     })
   }
