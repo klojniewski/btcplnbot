@@ -58,9 +58,15 @@ class App {
         if (this.available > Env.MINIMUM_ORDER_VALUE) {
           // check current price
           this.Bitbay.getPrice('buy').then(buyPrice => {
-            // create orders
             const { amountPerOrder, orderCount } = this.Creator.getAmountPerOrder(this.available, Env.ORDER_COUNT)
-            const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreate(buyPrice, this.available, amountPerOrder, orderCount, accountInfo.fee)
+            const orderParams = {
+              currentPrice: buyPrice,
+              available: this.available,
+              orderCount,
+              amountPerOrder,
+              fee: accountInfo.fee
+            }
+            const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreate(orderParams)
             this.Logger.printMessages(messages, 'buy')
             buyOrdersToCreate.forEach((orderToCreate, iterationNo) => {
               if (orderToCreate.estimatedProfit > Env.MINIMUM_PROFIT) {

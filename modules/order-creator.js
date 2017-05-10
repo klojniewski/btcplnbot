@@ -19,10 +19,17 @@ class OrderCreator {
       orderCount
     }
   }
-  getOrdersToCreate (currentPrice, available, amountPerOrder, orderCount, fee) {
+  getOrdersToCreate (orderParams) {
+    const {
+      currentPrice,
+      orderCount,
+      amountPerOrder,
+      fee
+     } = orderParams
     const startPrice = currentPrice - Env.START_PRICE_MARGIN
     const orders = []
-    const messages = this.getMessages(available, orderCount, amountPerOrder, startPrice)
+    const messages = this.getMessages(orderParams)
+
     for (let i = 0; i < orderCount; i++) {
       const buyPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
       const buySize = Number(amountPerOrder / buyPrice).toFixed(8)
@@ -33,24 +40,38 @@ class OrderCreator {
       messages
     }
   }
-  getOrdersToCreateByStartPrice (startPrice, available, amountPerOrder, orderCount, sellMargin, fee) {
+  getOrdersToCreateByStartPrice (orderParams) {
+    const {
+      currentPrice,
+      orderCount,
+      amountPerOrder,
+      sellMargin
+    } = orderParams
     const orders = []
-    const messages = this.getMessages(available, orderCount, amountPerOrder, startPrice)
+    const messages = this.getMessages(orderParams)
     for (let i = 0; i < orderCount; i++) {
-      const buyPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
+      const buyPrice = Number(currentPrice - (i * Env.GAP_AMOUNT))
       const buySize = Number(amountPerOrder / buyPrice).toFixed(8)
-      orders.push(this.createOrder(buyPrice, buySize, sellMargin, fee))
+      orders.push(this.createOrder(buyPrice, buySize, sellMargin))
     }
     return {
       orders,
       messages
     }
   }
-  getMessages (available, orderCount, amountPerOrder, startPrice) {
+  getMessages (orderParams) {
+    const {
+      available,
+      orderCount,
+      amountPerOrder,
+      currentPrice
+    } = orderParams
     const messages = []
+
     messages.push(`Have ${available} PLN to invest.`)
     messages.push(`Will create ${orderCount} BTC Buy Order(s) ${amountPerOrder} PLN each.`)
-    messages.push(`BTC Buy Orders will start from ${startPrice} PLN`)
+    messages.push(`BTC Buy Orders will start from ${currentPrice} PLN`)
+
     return messages
   }
   createOrder (buyPrice, buySize, sellMargin = false, fee = false) {

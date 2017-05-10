@@ -60,7 +60,14 @@ class WebApp {
           this.available = 100
 
           const { amountPerOrder, orderCount } = this.Creator.getAmountPerOrder(this.available, Env.ORDER_COUNT)
-          const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreateByStartPrice(startPrice, this.available, amountPerOrder, orderCount, sellMargin)
+          const orderParams = {
+            currentPrice: startPrice,
+            available: this.available,
+            orderCount,
+            amountPerOrder,
+            sellMargin
+          }
+          const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreateByStartPrice(orderParams)
 
           res.json({
             priceMargin,
