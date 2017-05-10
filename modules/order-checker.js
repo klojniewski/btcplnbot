@@ -8,8 +8,8 @@ class OrderChecker {
     return Promise.all([
       this.Bitbay.getOrders(),
       Order.findByStatusId(statusId)
-    ]).then(values => {
-      const [ marketOrders, databaseOrders ] = values
+    ])
+    .then(([marketOrders, databaseOrders]) => {
       const activeOrders = this.Bitbay.filterActiveOrders(marketOrders)
       const inActiveOrders = this.Bitbay.filterInActiveOrders(marketOrders)
       return {
@@ -20,21 +20,20 @@ class OrderChecker {
     })
   }
   checkIfOrderIsBought (inActiveOrders, orderId) {
-    const boughtOrder = inActiveOrders.filter(inActiveOrder => {
-      return orderId === inActiveOrder.order_id &&
-        inActiveOrder.units === '0.00000000'
+    const boughtOrder = inActiveOrders.filter(({order_id: id, units}) => {
+      return orderId === id && units === '0.00000000'
     })
-    return boughtOrder.length === 1
+    return !!boughtOrder.length
   }
   checkIfOrderIsActive (activeOrders, orderId) {
-    return activeOrders.some(order => order.order_id === orderId)
+    return activeOrders.some(({order_id: id}) => id === orderId)
   }
   checkIfOrderIsInActive (inActiveOrders, orderId) {
-    return inActiveOrders.some(order => order.order_id === orderId)
+    return inActiveOrders.some(({order_id: id}) => id === orderId)
   }
   getInactiveOrder (inActiveOrders, orderId) {
-    const boughtOrder = inActiveOrders.filter(inActiveOrder => {
-      return orderId === inActiveOrder.order_id
+    const boughtOrder = inActiveOrders.filter(({order_id: id}) => {
+      return orderId === id
     })
     return boughtOrder.length ? boughtOrder[0] : false
   }
