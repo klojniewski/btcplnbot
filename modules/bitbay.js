@@ -20,13 +20,13 @@ class Bitbay {
       'API-Hash': signagure.toString()
     }
   }
-  getOrders () {
+  getOrders (url = null) {
     const data = Object.assign({}, this.getBase('orders'), {
       limit: Env.TRADES_COUNT
     })
     const postQueryString = queryString.stringify(data)
 
-    return axios.post(Env.API_URL, postQueryString, {
+    return axios.post(url || Env.API_URL, postQueryString, {
       headers: this.getApiHeaders(postQueryString)
     })
     .then(({data}) => data)

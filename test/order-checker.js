@@ -3,72 +3,36 @@ const OrderChecker = require('../modules/order-checker')
 const Bitbay = require('../modules/bitbay')
 const Env = require('../config/env')
 const Mongoose = require('mongoose')
+const mockup = require('../db/mock')
+const nock = require('nock')
+
 const BitbayInstance = new Bitbay()
 const Checker = new OrderChecker(BitbayInstance)
+
+const {
+  inActiveOrdersMock,
+  activeOrdersMock,
+  shuffleOrdersMock
+ } = mockup
 
 Mongoose.connect(Env.MONGO_CONNECTION_STRING)
 Mongoose.Promise = global.Promise
 
-const inActiveOrdersMock = [
-  {
-    order_id: 70847540,
-    order_currency: 'BTC',
-    order_date: '2017-03-14 15:10:31',
-    payment_currency: 'PLN',
-    type: 'bid',
-    status: 'inactive',
-    units: '0.00000000',
-    start_units: '0.00471876',
-    current_price: '23.68397550',
-    start_price: 23.6839755036
-  },
-  {
-    order_id: 70847530,
-    order_currency: 'BTC',
-    order_date: '2017-03-14 15:10:26',
-    payment_currency: 'PLN',
-    type: 'bid',
-    status: 'inactive',
-    units: '0.00471595',
-    start_units: '0.00471595',
-    current_price: '23.68401965',
-    start_price: 23.6840196545
-  }]
+const mockEndpoint = 'http://example.com'
 
-const activeOrdersMock = [
-  {
-    order_id: 70847540,
-    order_currency: 'BTC',
-    order_date: '2017-03-14 15:10:31',
-    payment_currency: 'PLN',
-    type: 'bid',
-    status: 'active',
-    units: '0.00000000',
-    start_units: '0.00471876',
-    current_price: '23.68397550',
-    start_price: 23.6839755036
-  },
-  {
-    order_id: 70847530,
-    order_currency: 'BTC',
-    order_date: '2017-03-14 15:10:26',
-    payment_currency: 'PLN',
-    type: 'bid',
-    status: 'active',
-    units: '0.00471595',
-    start_units: '0.00471595',
-    current_price: '23.68401965',
-    start_price: 23.6840196545
-  }]
+nock(mockEndpoint)
+  .post('/')
+  .reply(200, shuffleOrdersMock)
 
 test('getOrders needs to return 3 objects', t => {
-  return Checker.getOrders(Env.STATUS_NEW).then(result => {
-    const { activeOrders, inActiveOrders, databaseOrders } = result
-    t.is(typeof activeOrders, 'object')
-    t.is(typeof inActiveOrders, 'object')
-    t.is(typeof databaseOrders, 'object')
-    t.true(inActiveOrders.length > 0)
-  })
+  return Checker.getOrders(Env.STATUS_NEW, mockEndpoint)
+    .then(result => {
+      const { activeOrders, inActiveOrders, databaseOrders } = result
+      t.is(typeof activeOrders, 'object')
+      t.is(typeof inActiveOrders, 'object')
+      t.is(typeof databaseOrders, 'object')
+      t.true(inActiveOrders.length > 0)
+    })
 })
 
 test('checkIfOrderIsBought needs to return true or false', t => {
@@ -98,6 +62,8 @@ test('checkIfOrderIsInActive needs to return true or false', t => {
 
 test('check if getInactiveOrder returns an order', t => {
   const inActiveOrderId = 70847540
+  const notPresentOrderId = 0
 
   t.is(typeof Checker.getInactiveOrder(inActiveOrdersMock, inActiveOrderId), 'object')
+  t.is(Checker.getInactiveOrder(inActiveOrdersMock, notPresentOrderId), false)
 })
