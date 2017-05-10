@@ -22,11 +22,7 @@ class Log {
   }
   printMessages (messages, type = 'info') {
     messages.forEach(message => {
-      if (type === 'buy') {
-        this.buy(message)
-      } else {
-        this.info(message)
-      }
+      type === 'buy' ? this.buy(message) : this.info(message)
     })
   }
   buy (message) {
