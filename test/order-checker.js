@@ -1,13 +1,18 @@
 const test = require('ava')
 const OrderChecker = require('../modules/order-checker')
 const Bitbay = require('../modules/bitbay')
+const Logger = require('../modules/log')
 const Env = require('../config/env')
 const Mongoose = require('mongoose')
+
 const mockup = require('../db/mock')
 const nock = require('nock')
 
-const BitbayInstance = new Bitbay()
+const LoggerInstance = new Logger()
+const BitbayInstance = new Bitbay(LoggerInstance)
 const Checker = new OrderChecker(BitbayInstance)
+
+const mockEndpoint = Env.API_URL
 
 const {
   inActiveOrdersMock,
@@ -18,14 +23,12 @@ const {
 Mongoose.connect(Env.MONGO_CONNECTION_STRING)
 Mongoose.Promise = global.Promise
 
-const mockEndpoint = 'http://example.com'
-
 nock(mockEndpoint)
-  .post('/')
+  .post('')
   .reply(200, shuffleOrdersMock)
 
 test('getOrders needs to return 3 objects', t => {
-  return Checker.getOrders(Env.STATUS_NEW, mockEndpoint)
+  return Checker.getOrders(Env.STATUS_NEW)
     .then(result => {
       const { activeOrders, inActiveOrders, databaseOrders } = result
       t.is(typeof activeOrders, 'object')
