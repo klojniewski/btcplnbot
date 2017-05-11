@@ -19,40 +19,23 @@ class OrderCreator {
       orderCount
     }
   }
-  getOrdersToCreate (orderParams) {
+  getOrdersToCreate (orderParams, byStartPrice = false) {
     const {
       currentPrice,
       orderCount,
       amountPerOrder,
       fee
      } = orderParams
-    const startPrice = currentPrice - Env.START_PRICE_MARGIN
+    const price = byStartPrice
+      ? currentPrice - Env.START_PRICE_MARGIN
+      : currentPrice
     const orders = []
     const messages = this.getMessages(orderParams)
 
     for (let i = 0; i < orderCount; i++) {
-      const buyPrice = Number(startPrice - (i * Env.GAP_AMOUNT))
+      const buyPrice = Number(price - (i * Env.GAP_AMOUNT))
       const buySize = Number(amountPerOrder / buyPrice).toFixed(8)
       orders.push(this.createOrder(buyPrice, buySize, false, fee))
-    }
-    return {
-      orders,
-      messages
-    }
-  }
-  getOrdersToCreateByStartPrice (orderParams) {
-    const {
-      currentPrice,
-      orderCount,
-      amountPerOrder,
-      sellMargin
-    } = orderParams
-    const orders = []
-    const messages = this.getMessages(orderParams)
-    for (let i = 0; i < orderCount; i++) {
-      const buyPrice = Number(currentPrice - (i * Env.GAP_AMOUNT))
-      const buySize = Number(amountPerOrder / buyPrice).toFixed(8)
-      orders.push(this.createOrder(buyPrice, buySize, sellMargin))
     }
     return {
       orders,
