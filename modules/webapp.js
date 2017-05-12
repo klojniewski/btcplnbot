@@ -4,17 +4,14 @@ const express = require('express')
 const path = require('path')
 const Order = require('../models/order')
 const Bitbay = require('../modules/bitbay')
-const Calculator = require('../modules/calculator')
-const Creator = require('../modules/order-creator')
+const Log = require('../modules/log')
 
 class WebApp {
   constructor () {
     Mongoose.connect(Env.MONGO_CONNECTION_STRING)
     Mongoose.Promise = global.Promise
-
-    this.Bitbay = new Bitbay()
-    this.Calculator = new Calculator()
-    this.Creator = new Creator()
+    this.Logger = new Log()
+    this.Bitbay = new Bitbay(this.Logger)
   }
   run () {
     const pathPrefix = path.join(`${__dirname}/../webapp/`)
@@ -45,61 +42,6 @@ class WebApp {
     this.app.get('/get-info', (req, res) => {
       this.Bitbay.getInfo().then(response => {
         res.json(response)
-      })
-    })
-
-    this.app.get('/calculate', (req, res) => {
-      const ticker = this.Bitbay.getTicker().then(data => {// eslint-disable-line
-        const volatility = this.Calculator.getVolatility(data.min, data.max, data.vwap)
-
-        this.Bitbay.getPrice('buy').then(buyPrice => {
-          const startPrice = this.Calculator.getStartPrice(buyPrice, volatility)
-          const priceMargin = buyPrice - startPrice
-
-          const sellMargin = priceMargin
-          this.available = 100
-
-          const { amountPerOrder, orderCount } = this.Creator.getAmountPerOrder(this.available, Env.ORDER_COUNT)
-          const orderParams = {
-            currentPrice: startPrice,
-            available: this.available,
-            orderCount,
-            amountPerOrder,
-            sellMargin
-          }
-          const { orders: buyOrdersToCreate, messages } = this.Creator.getOrdersToCreateByStartPrice(orderParams)
-
-          res.json({
-            priceMargin,
-            buyPrice,
-            startPrice,
-            volatility,
-            data,
-            buyOrdersToCreate,
-            messages
-          })
-        })
-      })
-    })
-
-    this.app.get('/get-orders', function (req, res) {
-      Order.find({}).sort({ dateCreated: -1 }).then(resp => {
-        const responseHtml = [[], [], [], [], []]
-        let profit = 0
-        resp.forEach(order => {
-          responseHtml[order.status - 1].push(order)
-          if (order.status === Env.STATUS_SOLD) {
-            profit += order.estimatedProfit
-          }
-        })
-        res.json({
-          new: responseHtml[0],
-          bought: responseHtml[1],
-          tobesold: responseHtml[2],
-          sold: responseHtml[3],
-          canceled: responseHtml[4],
-          profit
-        })
       })
     })
 

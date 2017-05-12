@@ -19,21 +19,18 @@ class OrderCreator {
       orderCount
     }
   }
-  getOrdersToCreate (orderParams, byStartPrice = false) {
+  getOrdersToCreate (orderParams) {
     const {
       currentPrice,
       orderCount,
       amountPerOrder,
       fee
      } = orderParams
-    const price = byStartPrice
-      ? currentPrice - Env.START_PRICE_MARGIN
-      : currentPrice
     const orders = []
     const messages = this.getMessages(orderParams)
 
     for (let i = 0; i < orderCount; i++) {
-      const buyPrice = Number(price - (i * Env.GAP_AMOUNT))
+      const buyPrice = Number(currentPrice - (i * Env.GAP_AMOUNT))
       const buySize = Number(amountPerOrder / buyPrice).toFixed(8)
       orders.push(this.createOrder(buyPrice, buySize, false, fee))
     }
