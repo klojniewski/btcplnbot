@@ -11,13 +11,13 @@ test('Calculates sell price bigger than buyPrice', t => {
   t.is(typeof Calc.getSellPrice(buyPrice), 'number')
 })
 
-test('Calculates BTC Buy commision that needs to be small', t => {
+test('Calculates Buy commision that needs to be small', t => {
   t.is(Calc.getBuyCommision(buyPrice) < (buyPrice / 100), true)
   t.is(Calc.getBuyCommision(buyPrice) > 0, true)
   t.is(typeof Calc.getBuyCommision(buyPrice), 'number')
 })
 
-test('Calculates BTC Sell commision that needs to be small', t => {
+test('Calculates Sell commision that needs to be small', t => {
   t.is(Calc.getSellCommision(buyPrice) < (buyPrice / 100), true)
   t.is(Calc.getSellCommision(buyPrice) > 0, true)
   t.is(typeof Calc.getSellCommision(buyPrice), 'number')

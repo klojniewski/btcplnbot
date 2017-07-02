@@ -14,16 +14,20 @@ const API_URL = `//${window.location.host}/`
 const webapp = new Vue({// eslint-disable-line
   el: '#app',
   ready: function () {
-    this.fetchData()
-
-    setInterval(() => {
-      this.fetchData()
-    }, 10 * 1000)
+    fetch(API_URL + 'get-ticker').then(data => {
+      data.json().then(tickerName => {
+        this.fetchData(tickerName)
+        setInterval(() => {
+          this.fetchData(tickerName)
+        }, 10 * 1000)
+      })
+    })
   },
   methods: {
-    fetchData: function () {
+    fetchData: function (tickerName) {
+      this.ticker = tickerName
       Promise.all([
-        this.fetchRates(),
+        this.fetchRates(tickerName),
         this.fetchOrders(),
         this.fetchInfo()
       ]).then(values => {
@@ -37,7 +41,7 @@ const webapp = new Vue({// eslint-disable-line
         })
       })
     },
-    fetchRates: () => fetch('https://bitbay.net/API/Public/BTCPLN/ticker.json'),
+    fetchRates: (tickerName) => fetch(`https://bitbay.net/API/Public/${tickerName}PLN/ticker.json`),
     fetchOrders: () => fetch(API_URL + 'get-all'),
     fetchInfo: () => fetch(API_URL + 'get-info'),
     parseOrders: function (data) {
@@ -72,7 +76,7 @@ const webapp = new Vue({// eslint-disable-line
       })
       this.tableData = data
       this.profit = profit
-      this.title = `[${Number(this.profit).toFixed(2)}] BTC PLN Bot`
+      this.title = `[${Number(this.profit).toFixed(2)}] ${this.ticker} PLN Bot`
       this.activeCount = activeCount
       this.toBeSoldCount = toBeSoldCount
       this.finishedCount = finishedCount
@@ -81,8 +85,8 @@ const webapp = new Vue({// eslint-disable-line
     },
     parseInfo: function (data) {
       const investedPLN = parseFloat(data.balances.PLN.locked)
-      const investedBTC = parseFloat(data.balances.BTC.locked)
-      const investedTotal = investedPLN + investedBTC * this.bitBay.bid
+      const investedCrypto = parseFloat(data.balances[this.ticker].locked)
+      const investedTotal = investedPLN + investedCrypto * this.bitBay.bid
       const totalRoi = this.profit / investedTotal * 100
       const timeOfInvestment = moment().diff('2017-03-01', 'days', true)
       const dailyRoi = totalRoi / timeOfInvestment
@@ -90,6 +94,10 @@ const webapp = new Vue({// eslint-disable-line
       this.invested = Number(investedTotal).toFixed(2) + ' PLN'
       this.roi = Number(totalRoi).toFixed(2) + '%'
       this.yearRoi = Number(dailyRoi * 365).toFixed(2) + '%'
+    },
+    parseTicker: function (data) {
+      console.log('parseTicker')
+      this.ticker = data
     },
     deleteMe: function (buyOrderId) {
       if (confirm('Are you sure?')) {
@@ -129,6 +137,7 @@ const webapp = new Vue({// eslint-disable-line
     volatility: 0,
     roi: 0,
     yearRoi: 0,
+    ticker: '',
     columns: ['buyPrice', 'toBuy', 'buySize', 'buyValue', 'sellPrice', 'toSell', 'sellSize', 'sellValue', 'estimatedProfit', 'status', 'dateCreated', 'dateFinished', 'delete'],
     options: {
       perPage: 50,
@@ -154,7 +163,7 @@ const webapp = new Vue({// eslint-disable-line
           return `${item.buyValue.toFixed(2)} PLN`
         },
         buySize: item => {
-          return `<span title="#${item.buyOrderId}">${item.buySize.toFixed(8)} BTC</span>`
+          return `<span title="#${item.buyOrderId}">${item.buySize.toFixed(8)} ${this.ticker}</span>`
         },
         toBuy: item => {
           return `${item.toBuy.toFixed(2)} PLN`
@@ -169,7 +178,7 @@ const webapp = new Vue({// eslint-disable-line
           return `${item.toSell.toFixed(2)} PLN`
         },
         sellSize: item => {
-          return `<span title="#${item.sellOrderId}">${item.sellSize.toFixed(8)} BTC</span>`
+          return `<span title="#${item.sellOrderId}">${item.sellSize.toFixed(8)} ${this.ticker}</span>`
         },
         estimatedProfit: item => {
           return `${item.estimatedProfit.toFixed(2)} PLN`
@@ -181,10 +190,10 @@ const webapp = new Vue({// eslint-disable-line
       listColumns: {
         status: [{
           id: 1,
-          text: 'BTC to Buy'
+          text: `Crypto to Buy`
         }, {
           id: 3,
-          text: 'BTC to Sell'
+          text: 'Crypto to Sell'
         }, {
           id: 4,
           text: 'Sold'
@@ -202,6 +211,6 @@ const webapp = new Vue({// eslint-disable-line
     },
     tableData: [],
     profit: 0,
-    title: 'BTC PLN BOT'
+    title: 'Crypto PLN BOT'
   }
 })
