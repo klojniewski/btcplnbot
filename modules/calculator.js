@@ -11,8 +11,8 @@ class Calculator {
   getSellPrice (buyPrice, sellMargin = null) {
     return buyPrice + (sellMargin || this.sellPriceMargin)
   }
-  getBuyCommision (btcSize, fee = false) {
-    return btcSize * (fee || this.commissionMaker) / 100
+  getBuyCommision (positionSize, fee = false) {
+    return positionSize * (fee || this.commissionMaker) / 100
   }
   getSellCommision (plnValue, fee = false) {
     return plnValue * (fee || this.commissionMaker) / 100

@@ -23,6 +23,7 @@
         <div class="col-md-4">
           <h2>BitBay Stats:</h2>
           <ul>
+            <li>Ticker Name: <strong>{{ ticker }}</strong></li>
             <li>Sell Price: <strong>{{ bitBay.ask.toFixed(2) + ' PLN' }}</strong></li>
             <li>Buy Price: <strong>{{ bitBay.bid.toFixed(2) + ' PLN' }}</strong></li>
             <li>VWAP: <strong>{{ bitBay.vwap.toFixed(2) + ' PLN' }}</strong></li>
@@ -36,8 +37,8 @@
         </div>
       </div>
         <div class="btn-group" role="toolbar" aria-label="...">
-          <span class="label label-primary">{{ activeCount }} BTC To Buy</span>
-          <span class="label label-info">{{ toBeSoldCount }} BTC To Sell</span>
+          <span class="label label-primary">{{ activeCount }} To Buy</span>
+          <span class="label label-info">{{ toBeSoldCount }} To Sell</span>
           <span class="label label-success">{{ finishedCount }} Sold</span>
           <span class="label label-warning">{{ inactiveCount }} Inactive</span>
           <span class="label label-danger">{{ canceledCount }} Canceled</span>

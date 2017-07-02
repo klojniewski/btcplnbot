@@ -49,8 +49,8 @@ class OrderCreator {
     const messages = []
 
     messages.push(`Have ${available} PLN to invest.`)
-    messages.push(`Will create ${orderCount} BTC Buy Order(s) ${amountPerOrder} PLN each.`)
-    messages.push(`BTC Buy Orders will start from ${currentPrice} PLN`)
+    messages.push(`Will create ${orderCount} ${Env.TICKER} Buy Order(s) ${amountPerOrder} PLN each.`)
+    messages.push(`${Env.TICKER} Buy Orders will start from ${currentPrice} PLN`)
 
     return messages
   }

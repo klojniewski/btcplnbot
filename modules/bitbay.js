@@ -49,7 +49,7 @@ class Bitbay {
     })
   }
   getTransactions () {
-    const market = 'BTC-PLN'
+    const market = `${Env.TICKER}-PLN`
     const data = Object.assign({}, this.getBase('transactions'), {
       market
     })
@@ -65,7 +65,7 @@ class Bitbay {
   }
   getHistory () {
     const params = {
-      currency: 'BTC',
+      currency: Env.TICKER,
       limit: 20
     }
     const data = Object.assign({}, this.getBase('history'), params)
@@ -82,7 +82,7 @@ class Bitbay {
   getTrades () {
     const params = {
       count: Env.TRADES_COUNT,
-      market: 'BTCPLN'
+      market: `${Env.TICKER}PLN`
     }
     const data = Object.assign({}, this.getBase('trades'), params)
     const postQueryString = queryString.stringify(data)
@@ -159,9 +159,9 @@ class Bitbay {
         this.Logger.error(`Error when fetching ticker ${error}`)
       })
   }
-  createBTCSellOrder (order) {
+  createSellOrder (order) {
     const params = {
-      currency: 'BTC',
+      currency: Env.TICKER,
       payment_currency: 'PLN',
       type: 'sell',
       amount: order.sellSize,
@@ -200,9 +200,9 @@ class Bitbay {
   filterOrders (orders, status) {
     return orders.filter(order => order.status === status)
   }
-  createBTCBuyOrder (order) {
+  createBuyOrder (order) {
     const params = {
-      currency: 'BTC',
+      currency: Env.TICKER,
       payment_currency: 'PLN',// eslint-disable-line
       type: 'buy',
       amount: order.buySize,
